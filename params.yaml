@@ -1,0 +1,373 @@
+# Tunable knobs for the DVC pipeline (dvc.yaml). Grouped by stage.
+# Changing a value here and running `dvc repro` reruns only the affected
+# stage(s) and everything downstream (DVC tracks this file as a dependency
+# of every stage that reads from it).
+
+# Design-space axis, logged per run as an MLflow tag (DESIGN_AXES in editjumps/core/utils.py): how the VH/VL chains are
+# handled, for BOTH the leakage-aware clustering (split_corpus) AND edit-flow /
+# MLM training.
+#   combine  (current): concatenate VH.VL and cluster/model the joined sequence.
+#   separate (planned): cluster heavy and light independently, then combine membership
+#            (reviewer suggestion). `split_corpus` REFUSES this value -- it is not implemented.
+# This key is the CLUSTERING axis only. The training side already runs "separate": with
+# `edit_flows.chain: heavy` the editor sees one chain per example, and `train_edit_flows` tags the
+# run `chain_handling=separate` for that reason. So the committed config is `combine` here and
+# effectively `separate` there, which is deliberate and is what `edit_flows.chain` records.
+chain_handling: combine       # combine | separate (separate raises in split_corpus)
+mlflow:
+  # Local by default so a clone logs to a file it owns. To log to a shared server, export
+  # MLFLOW_TRACKING_URI (editjumps/core/utils.py reads it first); leaving this null means a run
+  # never reaches for a host it cannot authenticate against.
+  tracking_uri: null
+
+# Edit-head pipeline (editjumps/core/edit_flows/README.md) as swappable stages — one choice per
+# stage, resolved in editjumps/core/edit_flows/stages.py, logged to MLflow. Override per-run with
+# `editjumps train-edit-flows --path ...`.
+edit_flows:
+  # ② needleman_wunsch          = homolog<->homolog global alignment at UNIT gap/mismatch cost.
+  #                               OURS: EvoFlow never states its scoring. What every recorded
+  #                               number was produced with, hence still the default.
+  #   needleman_wunsch_blosum62 = the same alignment under affine gaps + BLOSUM62 (gap open 11,
+  #                               extend 1), which is the standard reading of the Henikoff &
+  #                               Henikoff 1992 citation §3.2 attaches to "actual biochemical
+  #                               events" — and orientation-symmetric, like their coupling (eq 8).
+  #                               Changes the op mix, i.e. the TRAINING LABEL DISTRIBUTION that
+  #                               Table 1's mutation-type F1 is scored against: measured shift in
+  #                               docs/findings.md "② alignment scoring". Flipping this invalidates
+  #                               train_edit_flows' lock entry and every editor number downstream.
+  #   random_noise              = data<->random noise (Edit Flows' own path).
+  path: needleman_wunsch
+  schedule: linear            # ② kappa=t
+  loss: edit_flow             # ④ Bregman/CE rate-matching
+  # ⑤ euler     = Euler tau-leaping (Meta's first-order sampler): per step, fire every
+  #             position's edit conditionally independently with probability h*lambda.
+  #   gillespie = grid-free next-event simulation of §3.3's eqs 9-11, with the rate FROZEN between
+  #     events -- our approximation, not the paper's procedure, which integrates it (deviation 4 in
+  #     editjumps/core/edit_flows/README.md). Not "the exact one" against Euler: draw the
+  #             waiting time by inverse CDF, fire exactly ONE edit, re-condition on the result.
+  # Both apply the same clock normalization to the same rates, so they spend the same expected
+  # edit budget and a swap is a controlled comparison. `n_steps` below is Euler-only; Gillespie
+  # is grid-free and reuses it only to size a runaway guard.
+  sampler: euler              # euler | gillespie
+  # --- Appendix-A head parameterisation ---------------------------------------------------------
+  # EvoFlow's Appendix A specifies both of these differently from what the DEFAULTS here use.
+  # THE REPORTED ARM IS NOT THESE DEFAULTS: `eval_B_stock_appA`, the checkpoint behind every
+  # committed §4.2 number, was trained with `mlp` / `esm_lm_head` — Appendix A's reading. These
+  # values are what dvc.lock's smoke run used and what a fresh `train-edit-flows` will use.
+  # Both change parameter SHAPES, so flipping either invalidates an existing checkpoint —
+  # load_trained infers which was used from the state dict and refuses a mismatch rather than
+  # loading it partially, but its message names this file, so pass the flags explicitly.
+  rate_head: linear           # linear | mlp
+                              #   linear = one nn.Linear(D -> 1) per rate. What we train with.
+                              #   mlp    = Linear(D->D) + SiLU + Linear(D->1), i.e. the "shallow
+                              #            MLPs" of Appendix A.
+  q_head: fresh               # fresh | esm_lm_head
+                              #   fresh       = randomly initialised nn.Linear(D -> vocab).
+                              #   esm_lm_head = a copy of the trunk's pretrained masked-LM head per
+                              #                 Q head (eq 16), so Q starts with the trunk's token
+                              #                 knowledge instead of from noise. Needs the trunk
+                              #                 loaded as EsmForMaskedLM, which from_esm now does.
+  # Held-out validation. The pairs file has no family column, so the split is recovered from
+  # the pairs themselves (connected components can never merge two families) and enforced to be
+  # sequence-disjoint. A random pair-level split would be worthless: up to 20 pairs share the
+  # members of one family, so val would be full of sequences seen in training and its loss would
+  # track train loss for free. See split_pairs_by_family in editjumps/pipeline/train/evoflows.py for
+  # what this does and does NOT guarantee.
+  val_frac: 0.05
+  eval_steps: 500             # log val_loss every N steps
+  val_pairs: 256              # held-out pairs averaged per validation (fixed draws, not resampled)
+  # Early stopping, counted in VALIDATIONS (not steps) so its meaning does not change with
+  # eval_steps. Sized from the lr=1e-4 run, which improved to ~175 by step 6000 and only went
+  # flat there (an earlier reading called it flat from step 800; that was single-batch scatter of
+  # +/-40 masking a slow real decline - see docs/findings.md). At eval_steps=500, patience 6
+  # lets a run spend ~3000 steps failing to improve before it gives up.
+  patience: 6
+  min_delta: 1.0              # val_loss units; below this a "gain" is noise on a ~200-scale loss
+  # WHICH PROTEIN CONSTRUCT THE EDITOR IS TRAINED ON. heavy | light | joined -- the same three
+  # values `select_chain_pairs` accepts, applied to BOTH members of every pair line.
+  #
+  # `heavy` because the editor was the only arm in §4.2 trained on a different construct than it
+  # is scored on. `oas_homolog_pairs.tsv.gz` carries joined `VH.VL` lines (~231 aa, one `.` on
+  # every one of its 1,660,105 rows), while the §4.2 families that evaluate it --
+  # data/interim/seed_families/*.fasta, built by `seed_homologs --chain heavy` -- are single
+  # domains with a median length of 122, and so are the generation sets in metrics/disjoint/.
+  # The gap is measurable on one checkpoint: eval_B_stock_appA has a mean per-position edit rate
+  # of 0.0990 on a seed family and 0.1392 on the pairs file, 1.4x apart (docs/findings.md, the
+  # lambda-bar table). Under `clock / len(x)` normalization that rate IS the edit budget, so
+  # training and inference were spending different ones.
+  #
+  # The CLI default is `joined`, not this value: joined is what every checkpoint on record was
+  # trained with, so the historical commands keep meaning what they meant and the change is
+  # recorded here, where DVC tracks it and flipping it invalidates the stage.
+  chain: heavy
+  # train-edit-flows knobs. Unlike `pretrain` below these are a REAL fit, not a bounded
+  # reproducibility smoke run: 20000 steps x 16 pairs = 320,000 of the 1,660,105 available pairs,
+  # about 19% of one pass. dvc.lock records a much smaller smoke run (200 steps x 2) rather than
+  # these values -- see docs/reproducibility.md on why the editor stage is deliberately stale.
+  max_steps: 20000
+  batch_size: 16
+  lr: 1.0e-4
+  save_steps: 1000
+  checkpoint_uri: ""          # gs://… prefix -> periodic full-state checkpoints + resume; "" = off (no GCS calls)
+  eval_n_steps: 50            # Euler steps per generation (the arm's grid size; see run_config.py)
+  # ⑤ CLOCK NORMALIZATION (§3.3), an INFERENCE knob: every edit rate is multiplied by
+  # `clock / len(x)`, so the expected number of edits is set by this value instead of growing with
+  # sequence length. The paper compares methods "matching the expected number of mutations per
+  # sequence" (§4.2), which is not something an unclocked run can be made to do: the
+  # eval and sweep ran unclocked until now: 30.6-40.1 edits/sequence on VH.VL corpus input
+  # (generation_eval_A/B/C/D), 11.76 on the Ty1 seed family (metrics/sweep/arm-B-c00.json).
+  # (docs/findings.md pins the ~54 sometimes quoted for this to a guidance sweep on
+  # data/pretrain/edit_flows, which is none of the four evaluated arms, over corpus val lines.)
+  # Expected edits are ~ clock x mean per-position rate (the length cancels, which is the point),
+  # and that rate is a property of the CHECKPOINT and its inputs, not of the clock: it spans 2.5x
+  # across the runs on record, so a rate read off one checkpoint predicts nothing about another.
+  # 40 puts the twelve metrics/dn/ arms at 3.47-6.17 edits on the Ty1 seed family; across every
+  # clock-40 artefact the range is 3.47-6.90 -- that top end is arm B itself, on
+  # metrics/inputform/run-ty1_joined.json, so it is not a matter of unevaluated arms. Within
+  # metrics/dn/ and metrics/matched/ the maximum is 6.22 (metrics/matched/D-ty1-s1).
+  # §4.2 gives no mutation count at all, so the "3-11 edit band" sometimes attributed to it is not
+  # theirs: the only figure in the paper's prose is "as low as 1.5 mutations per sequence", about
+  # evotuning -- and the band cannot be recovered from Figure 3 (1.57-247.7 over six datasets) or Figure 5
+  # (2.54/4.43 on the VHH, 11.75/13.80 on the HER2 scFv) either. Provenance unknown; it may predate
+  # the 2026-08-28 recalibration of Figure 3's distance-to-x0 panel, which was mis-read by up to
+  # ~14x. DO NOT cite it as the paper's until someone derives it. What IS true and checkable: the
+  # baselines' budget is matched to the editor's own realised mean edit distance
+  # (`--mutations-from`, standard.py), so the clock sets the budget for every arm and nothing
+  # external pins it. The measured clock->edits curves, the arithmetic, and the
+  # clock a centred budget would want are all in docs/findings.md; re-check against a run's own
+  # mean_edit_distance rather than against a number quoted here.
+  # The FORMULA is ours, not the paper's: §3.3 names the mechanism and its purpose and never
+  # defines it (Figure 2 sweeps 50-1000, on single sequences, not joined VH.VL). It is now
+  # confirmed at two lengths against real weights (docs/findings.md), since an unclocked run is
+  # the same thing as clock = len(x). 0 = off, which reproduces every pre-clock number.
+  clock: 40
+  # (§4.1's own settings live in the `deterministic:` block below.)
+
+# EvoFlows §4.1: the synthetic deterministic-rule dataset, and the editor trained on it.
+# Separate from `edit_flows:` on purpose — it is a different dataset with a different edit density,
+# so sharing hyperparameters would silently mistune one of them.
+deterministic:
+  n_sequences: 20000          # source sequences drawn from the corpus TRAIN split
+  chain: heavy                # §4.1 is defined on one natural protein sequence, not a joined VH.VL
+  max_steps: 2000             # a tenth of edit_flows.max_steps: the rules are simple and learnable
+  batch_size: 8
+  lr: 1.0e-4
+  save_steps: 500
+  eval_n: 50                  # held-out (val-split) sequences scored
+  eval_n_steps: 50            # Euler steps per sequence
+  # Clock sweep. The rules apply ~17 edits to a ~120-residue VH, while our calibration puts
+  # clock 25/40/60 at only 2.2/4.0/5.1 edits — so the homolog defaults under-edit this task ~4x
+  # and would score near zero for that reason alone. Bracketing ~17 needs the paper's own range,
+  # which is the first independent reason to think Figure 2's 50-1000 sweep is the right scale.
+  clocks: "50,100,200,400"
+
+# Shared MMseqs2 settings for the two stages that cluster the full corpus (`split_corpus`,
+# `build_homolog_pairs`). The block used to also carry a test-set decontamination threshold; that
+# stage screened OAS against a separate project's labelled molecules and is not part of this
+# repository, so only the memory cap remains.
+mmseqs:
+  # Cap on MMseqs's prefilter working set. MMseqs sizes itself to available RAM, so a
+  # full-corpus run (2.5M sequences) will take every spare GB and push a 16-24GB machine
+  # into heavy swap — it took down a terminal mid-repro during development. Capping makes
+  # MMseqs split the work into passes: slower, bounded, survivable. Raise on a big box.
+  # NOTE: on the removed decontamination stage this changed RESULTS, not just speed: tighter caps
+  # mean more prefilter splits, each keeping its own candidates, so more hits. Kept a tracked param
+  # for the same reason — the lockfile records which cap produced the artefact.
+  split_memory_limit: 8G
+
+homolog_pairs:
+  # homolog_pairs.py -> editjumps/core/cluster_split.py. EvoFlows' coupling is symmetric by
+  # construction (eq 8), so `direction: none` is the faithful setting and the only one this
+  # repository accepts: orienting a pair toward the better member of a target property needs a
+  # property registry, which lives in the upstream project (docs/claims.md, "Why there is no target property").
+  min_seq_id: 0.5             # MMseqs2 min identity for homolog families
+  coverage: 0.8              # MMseqs2 min alignment coverage
+  mmseqs_mode: easy-cluster   # easy-cluster (sensitive) | easy-linclust (fast)
+  max_pairs_per_family: 20    # cap on pairs emitted per family
+  max_lines: 0                # use only the first N corpus lines (0 = all)
+  direction: none             # the only accepted value; `improving` is refused with the reason
+oas:
+  # download_oas.py
+  collection: paired          # OAS collection to crawl: paired or unpaired
+  min_len: 70                 # minimum chain length to keep
+  max_len: 200                # maximum chain length to keep
+  pair_chains: true           # emit VH<sep>VL per antibody (needed for cluster split)
+  pair_sep: "."                # separator between chains - must be in the ESM-2 vocab
+                               # (":" is NOT; it silently tokenizes to <unk>, collapsing
+                               # every VH/VL boundary to the same token)
+  emit_cdr_keys: true         # also write CDR-H3/L3 keys (needed for cluster split)
+  max_units: null             # cap on data units for testing; null = all (full corpus)
+
+split:
+  # split_corpus.py -> editjumps/core/cluster_split.py
+  val_frac: 0.05               # target validation fraction, by line count
+  min_seq_id: 0.9              # MMseqs2 minimum identity to cluster two CDR keys
+  coverage: 0.8                 # MMseqs2 minimum alignment coverage
+  mmseqs_mode: easy-cluster     # easy-cluster (sensitive) or easy-linclust (fast, for huge corpora)
+
+# EvoFlows builds families by searching from seeds, filtering on E-value and coverage rather than a
+# percent-identity floor (§4.2). These mirror the paper's stated values so the family statistics are
+# comparable to its Table 2; `chain: heavy` because their antibody seeds are VHH and scFv - single
+# chains - so searching our joined VH.VL would fail coverage for reasons unrelated to homology.
+seed_homologs:
+  chain: heavy                # heavy | light | joined
+  # 0.1 IS the paper's 1e-1, not a loosening of it, and our families are LARGER than Table 2's --
+  # Ty1's 38,687 against 3,335. See the prefilter note below for what actually changed the counts.
+  evalue: 0.1                 # paper: E-value <= 1e-1
+  coverage: 0.8               # paper: query coverage >= 0.8
+  sensitivity: 7.5            # MMseqs -s; the paper uses iterative profile search, which is more sensitive
+  # MMseqs keeps 300 prefilter hits per query BY DEFAULT, so our first families (394/396/330) were
+  # reporting that default rather than a homolog count. Raising the E-value 100x moved them 0.00%,
+  # which is what exposed it.
+  max_seqs: 100000            # prefilter hits per query; must exceed any plausible family size
+  # A DEVIATION, and a necessary one. The paper filters families on E-value and coverage only, which
+  # is selective against UniRef30 but nearly vacuous on OAS: uncapped, our families came back at
+  # 100,000+ members because every V domain shares the framework scaffold. 0.7 identity to the seed
+  # makes "family" mean a set of relatives rather than the whole database. 0.0 = their filter.
+  min_identity: 0.7
+
+pretrain:
+  # pretrain_esm.py
+  model_name: data/pretrain/base_checkpoints/esm2_t33_650M_UR50D  # local HF-format ESM-2 checkpoint (see convert_esm_checkpoint.py)
+  # convert_esm_checkpoint.py: fair-esm loader name used to fetch/convert model_name
+  # above (must be one of MODEL_DIMS - esm2_t6_8M / t12_35M / t30_150M / t33_650M UR50D)
+  base_checkpoint_loader_name: esm2_t33_650M_UR50D
+  epochs: 1.0
+  # Bounded reproducibility budget (deploy/gcp/repro.sky.yaml): the tracked/pushed
+  # esm2_oas is produced by a SHORT run so the GPU job finishes in a few minutes and
+  # stays cost-safe - it is a reproducible pipeline artifact, not a fully-converged
+  # model. Raise max_steps (-1 = full `epochs`) and max_seqs (0 = whole corpus) for a
+  # real continue-pretrain; dvc.lock records whichever values were actually used.
+  # RAISED from the 200-step / 3.2k-sequence smoke budget to a real continue-pretrain: the trunk
+  # every editor initialises from had seen 0.12% of the corpus: 200 steps x batch 16 = 3,200 of
+  # 2,586,927. (Not 20,000/2,586,927 = 0.77% -- max_seqs is a cap on the pool and never bound.)
+  # That was the largest single gap
+  # against EvoFlows (whose own trunk size the paper never states; their evotuned baseline is
+  # ESM-2-650M, which is what `base_checkpoint_loader_name` now matches).
+  max_steps: -1                 # -1 = run the full `epochs` over the corpus
+  batch_size: 32
+  max_length: 280               # max token length for joined VH.VL pairs
+  max_seqs: 0                   # 0 = the whole corpus
+  mlm_probability: 0.15
+  # fp32 on an A100 runs off the tensor cores: ~8x slower and twice the memory, which at 650M
+  # decides whether the run fits at all. `auto` = bf16 where the GPU supports it, fp32 on CPU/MPS,
+  # so local behaviour is unchanged.
+  precision: auto               # auto | bf16 | fp32
+  dataloader_workers: 4         # 0 tokenizes on the training process and shows up as GPU idle
+  # 5000, not 50: at 650M a checkpoint is ~2.6 GB and every save is uploaded to GCS, so a
+  # 50-step cadence on an ~81k-step run would ship ~4 TB and spend most of the run doing it.
+  # 5000 bounds preemption loss to ~20 min.
+  save_steps: 5000               # checkpoint every N steps (long runs need this, not just epoch-end)
+  save_total_limit: 3            # keep only the N most recent step checkpoints
+  checkpoint_uri: ""             # gs://… prefix -> mirror checkpoints to GCS + resume; "" = off (no GCS calls)
+
+# EvoFlows' two evotuned-PLM baselines (§2.2 for the tuning, §4.3 for the comparison).
+# Evotuning is the corpus pretrain above with a single homolog family in place of the corpus, so
+# `evotune` is a wrapper over `pretrain_esm` rather than a second trainer.
+#
+# THREE OF THESE KNOBS ARE SHARED BETWEEN TWO STAGES and must not be set independently:
+# `n_templates`, `holdout_size` and `seed` decide the §4.2 train/inference/holdout partition of the
+# family. `evotune_esm` trains on the TRAIN part; the two baseline stages score against the HOLDOUT
+# part. Set them differently in the two places and the baseline is scored against its own training
+# data — `evotune_baseline` checks the intersection and refuses rather than reporting a number.
+evotune:
+  # Which family. `seed_homologs` writes one FASTA per seed; the VHH is the antibody-like seed that
+  # matches what the rest of this pipeline generates, and the paper's own seed set includes a VHH.
+  #
+  # ONE family per run, and §4.2 reports the mean over TWO. So both families have been measured by
+  # flipping this line and re-running the three stages, and the resulting metrics are archived per
+  # family in metrics/evotune/ (Ty1 = sky job 67, HER2-VH = sky job 70) — see the README there.
+  # This stays on Ty1 so the committed dvc.lock entry and this file agree; flip it, re-run
+  # `evotune_esm evotune_baseline evotune_baseline_forced`, and archive the result the same way.
+  family: Anti-SARS-CoV-2_VHH_Ty1.fasta
+  # The paper's evotuned baseline is ESM-2-650M. This defaults to the SAME local checkpoint the
+  # corpus pretrain initialises from, so the baseline and the editor share a starting point and the
+  # comparison is about what each did with it.
+  model_name: data/pretrain/base_checkpoints/esm2_t33_650M_UR50D
+  # The paper does not state its evotuning budget — ours, not theirs.
+  #
+  # `epochs: 20` was written believing "a family is a few hundred sequences, so one epoch is a few
+  # dozen steps". That is wrong by two orders of magnitude: the Ty1 FASTA holds 38,687 usable
+  # homologs, and one epoch at batch 16 over the family's TRAIN split is 2,277 steps, so 20 epochs
+  # is 45,540. (38,687/16 = 2,418 counts the whole family and is the wrong denominator; 2,277 is
+  # the artefact's own figure — ty1-evotune_esm.json records final_epoch 0.87835 at 2,000 steps.)
+  # Sky job 58 ran that for 23 hours and reached step 825. Measured, not estimated — and the run was on CPU as well,
+  # which is a separate bug fixed in repro.sky.yaml.
+  #
+  # Bounded explicitly instead. This baseline exists to be budget-matched against the editor at
+  # §4.2, not to converge: 2,000 steps is ~0.88 of a pass over the family and the same order as the
+  # editor arms' 3,000. `epochs` stays as a second cap for a family small enough to exhaust first.
+  epochs: 20.0
+  max_steps: 2000               # explicit; -1 would mean the full `epochs`, i.e. 45,540 steps
+  batch_size: 16
+  max_length: 160               # a family FASTA holds single V domains, not joined VH.VL pairs
+  mlm_probability: 0.15         # "the same self-supervised learning objective" as the pretrain
+  val_fraction: 0.05            # of the TRAIN part only; says "did it converge", not "does it generalise"
+  save_steps: 200
+  save_total_limit: 2
+  precision: auto               # auto | bf16 | fp32
+  dataloader_workers: 0
+
+  # --- the §4.2 partition. Shared by evotune_esm and both baseline stages. ---
+  n_templates: 20               # inference part: sequences generated FROM
+  holdout_size: 200             # scoring holdout: sequences generated sets are scored AGAINST
+  seed: 0                       # decides WHICH members land where
+
+  # --- baseline generation ---
+  n_variants: 20                # variants per template; n_generated = n_templates * n_variants
+  # §4.2 compares methods "matching the expected number of mutations per sequence". This is that
+  # number, and it has to equal the editor's measured mean edit distance to mean anything —
+  # `--mutations-from metrics/generation_eval.json` reads it off a run instead of trusting this.
+  mutations: 4
+  # "iteratively infilled using the evotuned MLM with temperature scaling" gives no value, so 1.0
+  # (the model's own distribution) is ours, not theirs.
+  temperature: 1.0
+  # realised = keep drawing positions until `mutations` positions have actually CHANGED. Needed
+  # because an MLM infilling a conserved framework position usually returns the residue already
+  # there, so the unforced baseline lands below budget in one round and §4.2's constraint is on
+  # mutations, not masks. masked = the literal single-round reading. Both readings are ours; see
+  # editjumps/core/evotune/profile.py for why neither is presented as the paper's.
+  budget_mode: realised         # realised | masked
+  max_rounds: 8                 # cap, so an MLM that always returns the original still terminates
+  profile_size: 200             # family members aligned per template for eq 12; the runtime knob
+  k: 3                          # spectrum-kernel k-mer length (the paper states none)
+  # B.2's ESM-2 pseudo-log-likelihood is NOT a param: it needs a second stock ESM-2 and costs a
+  # forward pass per position, so it is opt-in per run (`make evotune-baselines PLL_MODEL=...`),
+  # exactly as it is for `make generation-eval`.
+
+# EvoFlows' fifth baseline (§4.2): "EvoDiff-MSA (Alamdari et al., 2024)". Their released model, run
+# in its own environment because evodiff pins numpy<2 (bash editjumps/core/evodiff_msa/install_evodiff.sh); see
+# editjumps/core/evodiff_msa/proposer.py for what is theirs and what is ours.
+#
+# The §4.2 partition is NOT duplicated here. This baseline reads `evotune.n_templates`,
+# `evotune.holdout_size` and `evotune.seed`, because a partition that could differ between two
+# baselines is a partition that WILL differ, and then no set-level metric is comparable between
+# them. Same reason `mutations` is shared: §4.2 matches one mutation count across all methods.
+evodiff:
+  # Which released checkpoint. msa-oa-dm-maxsub | msa-oa-dm-randsub — the two order-agnostic MSA
+  # models. The D3PM MSA checkpoints are deliberately not offered: they decode a whole row over a
+  # fixed timestep schedule, which has no partial-row form, so they cannot be budget-matched.
+  model: msa-oa-dm-maxsub
+  # inpaint  = mask `evotune.mutations` positions of x0 and decode only those. The mode §4.2's
+  #            matched mutation count requires; evodiff ships no MSA-inpainting entry point, so
+  #            this construction is OURS.
+  # unconditional = their generate_query_oadm_msa_simple verbatim, whole query row from scratch.
+  #            Theirs, and NOT budget-matched — reported as such.
+  mode: inpaint
+  # MSA rows the model conditions on, query included. 64 is evodiff's own default for these
+  # checkpoints. Clamped down to what the family's train part can supply.
+  n_sequences: 64
+  # Family members aligned per template before subsampling. Needleman-Wunsch is O(L²) in pure
+  # Python and runs once per template, so this is the runtime knob. Must stay >= n_sequences.
+  msa_size: 256
+  # MSA subsampling. Empty = the checkpoint's own training-time choice (MaxHamming for maxsub,
+  # random for randsub), which is the honest default; MaxHamming | random to override.
+  selection_type: ""
+  # Softmax temperature for the residue draw. 1.0 is the model's own distribution. The paper says
+  # nothing about EvoDiff-MSA's sampling temperature, so anything else here is ours.
+  temperature: 1.0
+  # unconditional mode only: their `penalty_value` argument, passed through unchanged.
+  penalty_value: 2.0
+  # Torch device for the isolated runner. auto = cuda if present, else cpu (not mps: the MSA
+  # transformer's row/column attention falls back per-op there).
+  device: auto

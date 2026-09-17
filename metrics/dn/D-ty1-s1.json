@@ -1,0 +1,134 @@
+{
+  "model": "data/pretrain/eval_D_stock_linear",
+  "clock_normalization": 40.0,
+  "baselines": {
+    "random_mutations": {
+      "levenshtein_to_template": 5.763333333333334,
+      "kl_generated_vs_natural": 0.0004643956465255704,
+      "spectrum_mmd": 1.3842851344045186,
+      "entropy_delta": 0.14625923797541407
+    },
+    "random_homolog_pairing": {
+      "levenshtein_to_template": 23.716666666666665,
+      "kl_generated_vs_natural": 9.199149487315342e-05,
+      "spectrum_mmd": 0.3913066430421375,
+      "entropy_delta": 0.024585198166397093
+    }
+  },
+  "n_templates": 30,
+  "n_variants_per_template": 10,
+  "n_generated": 300,
+  "n_natural_reference": 1000,
+  "n_natural_aligned": 30,
+  "reference_construction": "single family, inference/holdout disjoint (paper's \u00a74.2)",
+  "alignment": "Needleman-Wunsch projection onto template coordinates (L=114)",
+  "defined_by_the_paper": {
+    "levenshtein_to_template": 5.826666666666667,
+    "pairwise_levenshtein": 10.451111111111109,
+    "covariance_frobenius_generated": 3.897911783075905,
+    "covariance_frobenius_natural": 5.285446592201302,
+    "interaction_strength_mean_generated": 0.011237577066152606,
+    "interaction_strength_mean_natural": 0.017671370748516865,
+    "mip_mean_generated": -3.108513412476753e-18,
+    "mip_mean_natural": -2.821795497241436e-19,
+    "kl_generated_vs_natural": 0.0004307318107269918,
+    "spectrum_mmd": 0.8814891440687774
+  },
+  "mmd_diagnostic": {
+    "spectrum_mmd_unbiased_squared": 0.5787991087408386,
+    "n_generated": 300,
+    "n_reference": 1000,
+    "comparable_only_at_equal_n": true
+  },
+  "diversity_novelty": {
+    "model": {
+      "diversity": 25.1,
+      "novelty": 8.983333333333333,
+      "novelty_templates": 6.133333333333334,
+      "novelty_delta": 2.8499999999999988,
+      "novelty_detail": {
+        "mean": 8.983333333333333,
+        "median": 8.0,
+        "min_of_means": 3.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 6.133333333333334,
+        "median": 5.0,
+        "min_of_means": 2.0,
+        "n_queries": 30,
+        "n_reference": 20000
+      }
+    },
+    "random_mutations": {
+      "diversity": 31.366,
+      "novelty": 11.503333333333334,
+      "novelty_templates": 6.133333333333334,
+      "novelty_delta": 5.37,
+      "novelty_detail": {
+        "mean": 11.503333333333334,
+        "median": 11.0,
+        "min_of_means": 6.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 6.133333333333334,
+        "median": 5.0,
+        "min_of_means": 2.0,
+        "n_queries": 30,
+        "n_reference": 20000
+      }
+    },
+    "random_homolog_pairing": {
+      "diversity": 24.0405,
+      "novelty": 3.3,
+      "novelty_templates": 6.133333333333334,
+      "novelty_delta": -2.833333333333334,
+      "novelty_detail": {
+        "mean": 3.3,
+        "median": 0.0,
+        "min_of_means": 0.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 6.133333333333334,
+        "median": 5.0,
+        "min_of_means": 2.0,
+        "n_queries": 30,
+        "n_reference": 20000
+      }
+    }
+  },
+  "esm2_pseudo_log_likelihood": {
+    "generated": {
+      "mean": -1.8581444746190683,
+      "sum_mean": -18.581444746190684,
+      "n": 300
+    },
+    "natural_holdout": {
+      "mean": -1.8633813861059025,
+      "sum_mean": -18.633813861059025,
+      "n": 1000
+    },
+    "random_mutations": {
+      "mean": -2.1386524687999238,
+      "sum_mean": -21.386524687999238,
+      "n": 300
+    },
+    "random_homolog_pairing": {
+      "mean": -1.8833671257807874,
+      "sum_mean": -18.83367125780787,
+      "n": 300
+    }
+  },
+  "our_interpretation": {
+    "entropy_delta": 0.03930795751969918,
+    "js_divergence": 0.00010971520901034419,
+    "profile_log_likelihood": -55.13666140764601
+  },
+  "not_implemented": [],
+  "caveats": []
+}

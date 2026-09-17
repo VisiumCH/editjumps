@@ -1,0 +1,42 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "editjumps: an independent reproduction of EvoFlows edit-flow sequence editing"
+abstract: >-
+  An independent reproduction of EvoFlows (arXiv 2603.11703), an edit-flow generative model over
+  protein sequences that proposes insertions, deletions and substitutions on a template, built on
+  Edit Flows (arXiv 2506.09018) over an ESM-2 trunk. Includes the corpus build, the trunk
+  adaptation, the Section 4.2 baselines, and the evaluation harness the reported numbers come from.
+type: software
+authors:
+  - name: "Anonymous Author(s)"
+version: 0.0.1
+repository-code: "https://anonymous.4open.science/r/editjumps-BA56"
+keywords:
+  - antibody
+  - protein engineering
+  - sequence editing
+  - flow matching
+  - ESM-2
+  - reproducible research
+license: MIT
+references:
+  # Surnames only: these are the author lists as recorded in docs/evoflow_reproduction.md.
+  - type: article
+    title: "EvoFlows: Evolutionary Edit-Based Flow-Matching for Protein Engineering"
+    authors:
+      - family-names: Deutschmann
+      - family-names: Ferragu
+      - family-names: Ziegler
+      - family-names: Aziznejad
+      - family-names: Bixby
+    year: 2026
+    notes: "arXiv:2603.11703 - the paper this repository reproduces."
+  - type: article
+    title: "Edit Flows: Flow Matching with Edit Operations"
+    authors:
+      - family-names: Havasi
+      - family-names: Karrer
+      - family-names: Gat
+      - family-names: Chen
+    year: 2025
+    notes: "arXiv:2506.09018 - the edit-flow formulation the editor is built on."

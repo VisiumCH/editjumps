@@ -1,0 +1,482 @@
+# GPU training job — closes the loop: pull data from the GCS DVC remote, train the
+# edit-flow model on an L4, and log to the shared (IAM-private) MLflow server.
+#
+#   sky launch -c editjumps-train deploy/gcp/train.sky.yaml --retry-until-up --down
+#   sky logs editjumps-train           # follow
+#   sky down editjumps-train           # tear down the GPU box when done
+#
+# The VM runs as skypilot-v1@ — NOT the default compute SA, which is what this header used to
+# claim and what cost weeks of silently-lost runs (see the note above the MLflow probe in the run
+# block). It reads the DVC bucket with no extra setup; for MLflow it authenticates to the private
+# Cloud Run service with that SA's metadata identity token, which needs skypilot-v1 in terraform's
+# invoker_members.
+name: editjumps-edit-flows-train
+
+# Hyperparameter EXPERIMENT runs go through this file, not `dvc repro`. A dvc stage declares one
+# output (data/pretrain/edit_flows) and one lock entry, so two concurrent repros with different
+# hyperparameters would fight over both and the lock could only describe one of them. This path
+# calls the CLI directly: nothing is written to dvc.lock, and the run is compared in MLflow —
+# which is what a hyperparameter sweep wants anyway. Promote a winner by moving its values into
+# params.yaml and running the stage.
+envs:
+  DVC_BUCKET: ""            # REQUIRED: your GCS bucket, e.g. gs://my-project-dvc
+                          # (deploy/gcp/config.env.example); not committed, so the
+                          # repo names no one's storage
+  MAX_STEPS: "20000"
+  BATCH_SIZE: "16"
+  LR: "1e-4"
+  VAL_FRAC: "0.05"
+  EVAL_STEPS: "500"
+  VAL_PAIRS: "256"
+  # Checkpoint cadence. NOT left to the CLI default of 100, which is sized for 200-step smoke
+  # runs: the full-state checkpoint is ~391 MB and write_checkpoint is synchronous inside the
+  # training loop, so at ~1 s/step a default of 100 uploads 391 MB every ~105 s and spends real
+  # training time doing it. 1000 matches params.yaml and bounds preemption loss to ~17 min.
+  SAVE_STEPS: "1000"
+  PATIENCE: "6"
+  MIN_DELTA: "1.0"
+  # Distinguishes this run's checkpoint prefix AND its MLflow run name. MUST differ between
+  # experiments: a shared prefix means the second run downloads the first's checkpoint.pt and
+  # silently continues it instead of training the new configuration from the trunk.
+  RUN_TAG: baseline
+  # ④ the training objective. Empty means params.yaml's `edit_flow`, which is what every recorded
+  # run used. `edit_flow_figure13` is the second arm of the deletion-supervision ablation: Edit
+  # Flows' Figure 13 delete branch, which supervises a deletion on (EPS, EPS) columns where eq 23's
+  # indicator says none is needed. Measured on the real pairs it corrupts 4.04% of its own delete
+  # supervision across 49.2% of training examples -- see edit_targets' docstring. The trainer was
+  # already able to take --loss; this file simply never passed it.
+  LOSS: ""
+  # Which trainer this job runs. Both share the setup above - the CUDA-matched torch, the MLflow
+  # probe and the metrics copy-back - so they live in one file rather than two that drift.
+  #   edit_flows  one editor on a pair file, MAX_STEPS total
+  #   evotune     MLM-adapt ESM-2 to ONE homolog family (§2.2) -> the evotuned trunk both §4.3
+  #               baselines read. Added because that trunk was missing from every store: never
+  #               pushed to DVC, in no GCS prefix, and — before `evotune` opened an MLflow run —
+  #               recorded nowhere at all. Establishing it was simply gone cost about an hour.
+  #               A DIFFERENT PAPER's method (Alley et al. 2019), which is why its run lands in its
+  #               own MLflow experiment and its own GCS prefix -- filing it under models/edit_flows/
+  #               is how a reader ends up trying to load_trained() something that is not an
+  #               edit-flow editor at all. It is still a `reproduction` stage in
+  #               editjumps/core/provenance.py, because EvoFlows §2.2/§4.3 uses it as a baseline and
+  #               that baseline is what we are reproducing.
+  #
+  #               PRICE IT FIRST. Run this mode with MAX_STEPS=50 on one node and read `s_per_step`
+  #               off the run; that is minutes, and it is the only number a launch decision can use.
+  #               The figure on record is 866 ms/step at dim=128, batch 8, on MPS, and scaling that
+  #               to 768/12/8 on an A100 across a different device, batch size and attention path is
+  #               the error this file already records once, at the L4/A100 note below ("L4 is 15x
+  #               slower", actually a CPU-fallback bug; the real ratio is ~2x). That correction
+  #               lives here, not in docs/performance.md, which this line used to cite for it and
+  #               which contains no "15x" anywhere.
+  MODE: edit_flows
+  # WHICH PAIR FILE the editor trains on (and MODE=geneval scores its held-out tail against).
+  # Was hardcoded to oas_homolog_pairs.tsv.gz in three places, so no run could train on a different
+  # corpus without editing the run block. It is an env var and not a `pair_source` params key on
+  # purpose -- same reasoning as the header: which pairs an experiment trains on is chosen per run
+  # and compared in MLflow, not written into dvc.lock.
+  #
+  # It is also the PULL list entry, so a file that is not on the DVC remote fails the post-pull
+  # assertion below by name instead of dying inside the trainer.
+  #
+  # NOT interchangeable with the §4.1 deterministic pair file: that one is synthetic, built from
+  # a stated rule rather than from natural homology, so an editor trained on it is answering a
+  # different question and its numbers are not a row of the main table.
+  PAIRS: data/pretrain/oas_homolog_pairs.tsv.gz
+  # Which family to evotune (MODE=evotune only). §4.2 reports the mean over TWO, so this is flipped
+  # and re-run rather than being a list.
+  EVOTUNE_FAMILY: data/interim/seed_families/Anti-SARS-CoV-2_VHH_Ty1.fasta
+  # Set to the editor's pairs file to adapt the trunk only on members absent from it. Required when
+  # the baseline will be scored against a disjoint reference: with the default split, 194 of 200
+  # disjoint-reference sequences sit in the evotuning corpus and evotune_baseline refuses to score.
+  EVOTUNE_DISJOINT_PAIRS: ""
+  FOLDS: all
+  FAMILY: ""                  # MODE=geneval only: a seed-family FASTA for the paper's holdout
+  PLL_MODEL: ""               # MODE=geneval only: stock ESM-2 for B.2 naturalness
+  CLOCK: ""                   # MODE=geneval only: clock normalization (§3.3)
+  N_TEMPLATES: ""             # MODE=geneval only
+  N_VARIANTS: ""              # MODE=geneval only
+  # ② schedule override for the training path: linear (kappa=t) or cubic (kappa=t^3). Empty falls
+  # back to params.yaml's edit_flows.schedule. Exists so a matched A/B pair can differ in exactly
+  # one thing without editing a tracked file per run: Edit Flows states a cubic scheduler in its
+  # experiments (p9) and ships `kappa = t` in its Figure 13 code, so which of the two is a deviation
+  # depends on which half of the paper you read, and the cost of the difference is unmeasured.
+  SCHEDULE: ""
+  # MODE=geneval only: how many natural sequences the holdout reference holds. Empty = the CLI
+  # default of 200. Worth varying deliberately, not incidentally: covariance_agreement and
+  # mip_agreement both move MORE with this number than they do between our arms, and the
+  # real-homolog ceiling they are read against moves too -- but not in proportion, so even the
+  # score/ceiling ratio is not size-invariant. Every run records `agreement_reference_n`.
+  HOLDOUT_SIZE: ""
+  # Distinguishes runs that share a RUN_TAG. RUN_TAG names the GCS checkpoint prefix, so two
+  # families evaluated from the SAME checkpoint cannot vary it -- and both then write
+  # metrics/generation_eval_$RUN_TAG.json and both copy out to $RUN_TAG-<name>, so the second
+  # silently overwrote the first (jobs 60 and 61 did exactly that). Defaults to RUN_TAG.
+  METRICS_TAG: ""
+  BATCH_SIZES: "16,64,256"    # MODE=calibrate only: which batch sizes to time
+  # The trunk to initialise the editor from. Default is our OAS-adapted trunk; a HuggingFace id
+  # (e.g. facebook/esm2_t12_35M_UR50D) runs the paper's own choice — "the encoder trunk of a
+  # pre-trained ESM-2 model" — since EvoFlows describes NO domain-adaptive pretraining. An id with
+  # no "/data/" prefix is downloaded on the VM and skipped in the dvc pull list.
+  MODEL_NAME: data/pretrain/esm2_oas
+  # Appendix A's head parameterisation (shallow-MLP rates, ESM-2 LM heads for Q). Empty = whatever
+  # params.yaml says, so the default run is unchanged.
+  RATE_HEAD: ""
+  Q_HEAD: ""
+  # Empty = the CLI default, which reads params.yaml's committed values through dvc.yaml. Set here
+  # only to run a configuration OTHER than the tracked one, which is what this file is for.
+  # NOTE: seventeen comment lines were removed here. They documented env keys this file no longer
+  # defines -- a `dit` trunk, a warm-up schedule, a checkpoint-retention count, a split-head bias
+  # measured in "leaves", and a CHAIN key said to refuse `joined`. None of those exist in this
+  # repository: there is no `dit` and no split head (that is Branching Flows, deliberately kept
+  # out), the editor trains at constant lr with no warm-up (docs/model_cards/edit-flows-editor.md),
+  # and `--chain` DEFAULTS to `joined` (editjumps/pipeline/train/train_edit_flows.py, params.yaml).
+  # They were residue from removed variables, describing another model, above no key at all.
+
+workdir: . # syncs the repo (data/** is gitignored -> pulled via DVC instead)
+
+resources:
+  cloud: gcp
+  # A SET, not one accelerator. SkyPilot tries these in cost order and takes whatever actually has
+  # capacity. Written as a set because A100:1 in europe-west4 is regularly exhausted -- both zones
+  # returned "Failed to acquire resources" for the deletion-supervision ablation, and a single
+  # --gpus A100:1 then leaves --retry-until-up spinning against a zone that has none rather than
+  # taking the A100-80GB or H100 sitting next to it. All four are in europe-west4, so nothing here
+  # moves data outside the EU.
+  #
+  # A100-80GB and H100 are OUT of the set, and this is a quota fact rather than a preference: this
+  # project's A100-80GB quota is 0 and H100 was never granted, so both were unsatisfiable every time
+  # SkyPilot tried them. Leaving them in cost provisioning attempts against capacity that cannot
+  # exist. A100 (40 GB) on-demand quota is 16 against 64 on spot, which is why every run through
+  # this file wants `--use-spot`.
+  #
+  # L4 stays in the set and is cheapest, so it wins when it is all that is free. The measured
+  # comparison is ~1.05 s/step on an L4 (job 10) against ~0.54 s/step on an A100 (job 76, 20,000
+  # steps in 3 h 0 m), so the A100 is about **2x** faster for this trainer and an L4 fallback is
+  # ~5.8 h for a 20,000-step run. A ~16 s/step rate is NOT an L4 rate whatever you read: it is the
+  # CPU-fallback bug, the editor loop running on CPU after torch reverted to a driver-incompatible
+  # wheel (docs/performance.md, "Numbers that are not GPU performance"). Still worth knowing
+  # about -- pass `--gpus A100:1 --region europe-west4` when a run must not land on L4 -- but it is
+  # a 2x decision, not a "this run will never finish" one.
+  accelerators: {A100:1, L4:1}
+  disk_size: 100
+  # A region LIST, not a pin. `region: europe-west6` alone made every A100 request fail prechecks in
+  # two seconds — "Catalog does not contain any instances satisfying the request: 1x GCP({'A100': 1},
+  # region=europe-west6)" — because Zurich has no A100 at all, and the only EU region that does is
+  # europe-west4. So `--gpus A100:1` was unusable through this file unless the caller also remembered
+  # `--region europe-west4`, which is a footgun rather than a default. repro.sky.yaml already had
+  # this list; train.sky.yaml never got it.
+  #
+  # west6 stays first for the L4 case: it is co-located with the GCS bucket and the MLflow Cloud Run
+  # service. The rest are cross-region within the EU, which costs a little egress and changes no
+  # setup. west4 is the one that carries A100, so an A100 request skips straight to it.
+  any_of:
+    - region: europe-west6 # Zurich - co-located with the data + MLflow; L4, no A100
+    - region: europe-west4 # Netherlands - the only EU region with A100 in the catalog
+    - region: europe-west1 # Belgium
+    - region: europe-west3 # Frankfurt
+    - region: europe-west2 # London
+
+setup: |
+  set -e
+  # HMMER, for the `hmmscan` binary ANARCI shells out to. Nothing in this repository's training
+  # path needs it any more — the CDR mask matches by substring and stays dependency-free — but it
+  # is six seconds of apt and it is how job 18 died ("RuntimeError: hmmscan not found") back when
+  # a stage did need it, so it stays as insurance rather than being removed on a hunch.
+  sudo apt-get update -qq && sudo apt-get install -y -qq hmmer
+  hmmscan -h > /dev/null || { echo "hmmscan installed but not runnable"; exit 1; }
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  source "$HOME/.local/bin/env"
+  uv sync --group train   # torch + transformers + dvc[gs]
+  # The default (PyPI) torch wheel is the +cu130 build, but the SkyPilot GCP VM ships an
+  # older NVIDIA driver (CUDA 12.2) that can't run cu130 -> torch.cuda.is_available()==False
+  # -> silent CPU fallback (~16s/step). Reinstall torch with the CUDA build that matches
+  # THIS VM's driver (uv --torch-backend auto-detects it via nvidia-smi). VM-specific on
+  # purpose: pyproject/uv.lock keep the default torch so the Mac dev env still gets MPS/CPU.
+  uv pip install "torch==2.12.1" --reinstall --torch-backend=auto
+  # Fail fast in (cheap) setup if torch still can't see the GPU, rather than burning GPU
+  # time on a CPU fallback.
+  uv run python -c "import torch,sys; ok=torch.cuda.is_available(); print('CUDA available:', ok, '| torch', torch.__version__); sys.exit(0 if ok else 1)"
+
+run: |
+  set -e
+  source "$HOME/.local/bin/env"
+
+  # SkyPilot strips .git from the workdir sync, but DVC's SCM layer refuses to open a repo
+  # that has .dvc/ without .git/ ("<dir> is not a git repository"). Re-init a throwaway git
+  # repo so dvc pull works — no commits needed, and it's recreated on every recovery VM.
+  git init -q && git config user.email repro@editjumps.local && git config user.name editjumps-repro
+
+  # Configure local DVC remote from DVC_BUCKET
+  if [ -z "$DVC_BUCKET" ]; then
+    echo "FATAL: DVC_BUCKET environment variable is not set." >&2
+    exit 1
+  fi
+  uv run dvc remote modify --local gcs url "$DVC_BUCKET/dvc"
+
+  # Pull ONLY what this mode needs, never a blanket `dvc pull`. A blanket pull fetches every
+  # declared output in dvc.yaml, so a single stage whose outs are not in the remote yet breaks
+  # repro.sky.yaml solved the same class of failure by deriving its pull list; this is the
+  # narrow equivalent for the two trainers here.
+  # A marker for "what THIS run produced". metrics/ ships ~185 git-tracked JSONs, so the upload
+  # below cannot tell a file this run wrote from one that arrived with the checkout -- and it was
+  # copying all of them under the run tag, which put a couple of hundred junk objects into repro-artifacts/ per
+  # launch. Touched before the trainer so anything newer is this run's.
+  RUN_START_MARKER="$(mktemp)"
+  touch "$RUN_START_MARKER"
+
+  if [ "$MODE" = "repair_cv" ]; then
+    echo "repair_cv is not part of this repository." >&2
+    exit 2
+  elif [ "$MODE" = "evotune" ]; then
+    # Only the family and the base trunk: evotune builds its own train/val corpus from the FASTA and
+    # never opens the pairs file. Its own branch rather than reusing the else-branch's $FAMILY test,
+    # which is a DIFFERENT variable -- EVOTUNE_FAMILY was set, $FAMILY was not, the seed families
+    # were therefore not pulled, and the run died on a missing FASTA after provisioning an A100.
+    PULL="data/interim/seed_families"
+    case "$MODEL_NAME" in data/*) PULL="$MODEL_NAME $PULL";; esac
+    # The disjoint filter reads the pairs file, so it has to be here too.
+    [ -n "$EVOTUNE_DISJOINT_PAIRS" ] && PULL="$EVOTUNE_DISJOINT_PAIRS $PULL"
+  elif [ "$MODE" = "branching_flows" ]; then
+    echo "branching_flows is not part of this repository." >&2
+    exit 2
+  else
+    PULL="$PAIRS"
+    # Only DVC-tracked trunks are pulled; a HuggingFace id is fetched by transformers on the VM.
+    case "$MODEL_NAME" in data/*) PULL="$MODEL_NAME $PULL";; esac
+    # The seed-family FASTA is a dvc out; without it the paper's holdout construction cannot run.
+    [ -n "$FAMILY" ] && PULL="data/interim/seed_families $PULL"
+  fi
+  echo "dvc pull ($MODE): $PULL"
+  uv run dvc pull -r gcs $PULL
+
+  # Assert the inputs are HERE, not that the pull command exited 0. `dvc pull` returns 0 having
+  # fetched nothing when a path is not in the remote, so the first evotune run provisioned an A100,
+  # pulled "successfully", and died inside pathlib on a missing FASTA -- a deep FileNotFoundError
+  # that named a file rather than the reason. Failing here names the reason and costs one line.
+  for required in $PULL; do
+    if [ ! -e "$required" ]; then
+      echo "FATAL: $required is missing after the dvc pull (MODE=$MODE)." >&2
+      echo "       Either it is not in the remote, or this mode's PULL list is wrong." >&2
+      exit 1
+    fi
+  done
+  if [ "$MODE" = "evotune" ] && [ ! -f "$EVOTUNE_FAMILY" ]; then
+    echo "FATAL: EVOTUNE_FAMILY=$EVOTUNE_FAMILY does not exist after the pull." >&2
+    exit 1
+  fi
+
+  # MLflow logging to the private Cloud Run server. `gcloud run services proxy` needs a
+  # gcloud component the VM can't install, so instead probe the server with the compute
+  # SA's metadata identity token and log remotely if it answers (requires the SA to hold
+  # run.invoker — granted via terraform's invoker_members). Otherwise fall back to a local
+  # sqlite store so a run never hard-fails on logging.
+  # MLflow logging to the private Cloud Run server, with the fallback reporting facts rather than
+  # theories. History worth keeping, because two wrong assumptions cost weeks of silently-lost runs:
+  #   * The old fallback message asserted "the compute SA lacks run.invoker". The compute SA HAS
+  #     run.invoker - but the VMs do not run as it. They run as skypilot-v1@…, which had no grant,
+  #     so every GPU run got 403 and fell back to a sqlite file that died with the cluster. Fixed by
+  #     adding skypilot-v1 to terraform's invoker_members; verified from the VM itself, where the
+  #     metadata token now returns HTTP 200 against /health and the experiments API.
+  #   * `gcloud run services proxy` also needs a component this VM's gcloud will not install, which
+  #     is why this probes with a metadata identity token instead of proxying.
+  # The probe prints the URL, whether a token was minted, and the HTTP status, and asserts nothing
+  # it did not measure - a fallback that names a cause it has not checked is worse than one that
+  # just reports the code.
+  # Read the URL from params.yaml, which already declares it (= `terraform output mlflow_url`).
+  # It used to come from `gcloud run services describe`, which works on a SkyPilot VM only because
+  # SkyPilot forwards the *user's* gcloud credentials: the VM's own SA (skypilot-v1) lacks
+  # run.services.get. So the URL came from one identity and the bearer token from another - and if
+  # credential forwarding ever changes, the URL goes empty and every run silently falls back to a
+  # sqlite file that dies with the cluster. params.yaml needs no credentials at all.
+  MLFLOW_URL="$(uv run python -c "import yaml;print(yaml.safe_load(open('params.yaml'))['mlflow']['tracking_uri'])" 2>/tmp/mlflow_url.err)"
+  if [ -z "$MLFLOW_URL" ]; then
+    echo "MLflow probe: params.yaml gave no mlflow.tracking_uri; falling back to gcloud"; cat /tmp/mlflow_url.err || true
+    MLFLOW_URL="$(gcloud run services describe profound-mlflow --region europe-west6 --format='value(status.url)' 2>/dev/null)"
+  fi
+  TOKEN="$(curl -s -H 'Metadata-Flavor: Google' \
+    "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience=$MLFLOW_URL" || true)"
+  MLFLOW_HTTP=000
+  if [ -n "$MLFLOW_URL" ] && [ -n "$TOKEN" ]; then
+    MLFLOW_HTTP="$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $TOKEN" "$MLFLOW_URL/health" || echo 000)"
+  fi
+  echo "MLflow probe: url=${MLFLOW_URL:-<empty>} token_bytes=${#TOKEN} health_http=$MLFLOW_HTTP"
+  if [ "$MLFLOW_HTTP" = "200" ]; then
+    export MLFLOW_TRACKING_URI="$MLFLOW_URL"
+    export MLFLOW_TRACKING_TOKEN="$TOKEN"
+    echo "MLflow -> remote $MLFLOW_URL"
+  else
+    export MLFLOW_TRACKING_URI="sqlite:///$(pwd)/mlflow.db"  # mlflow>=3 dropped the file:// store
+    echo "MLflow -> local $MLFLOW_TRACKING_URI (remote probe returned $MLFLOW_HTTP; metrics are"
+    echo "  copied to \$DVC_BUCKET/repro-artifacts/ at the end so they are not lost with the cluster)"
+  fi
+
+  # Periodic full-state checkpoints to GCS + resume-from-latest so a preempted/crashed
+  # run survives: a manual relaunch (same -c name) pulls the latest checkpoint back and
+  # continues instead of restarting. Keyed by the sky job name so each job has its own prefix.
+  # Tell MLflow where this run's artefacts will land, BEFORE the trainer starts. Everything below
+  # copies to GCS from this shell, after the Python process has exited, so nothing in the run could
+  # record its own destination -- and the model upload to MLflow is skipped outright whenever a file
+  # exceeds its 24 MB limit, which a 128 MB trunk always does. The result was an MLflow run that
+  # knew a model existed, knew it had been skipped, and could not say where it was.
+  # editjumps/core/utils.py :: gcs_destination_tags reads these and stamps them on every run.
+  if [ "$MODE" = "evotune" ]; then
+    # Its own prefix: an MLM-adapted trunk is not an edit-flow editor, and filing it under
+    # models/edit_flows/ is how a reader ends up trying to load_trained() something that has no
+    # rate heads.
+    export MODEL_GCS_URI="${DVC_BUCKET}/models/esm2_evotuned/$RUN_TAG"
+  elif [ "$MODE" = "branching_flows" ]; then
+    echo "branching_flows is not part of this repository." >&2
+    exit 2
+  else
+    export MODEL_GCS_URI="${DVC_BUCKET}/models/edit_flows/$RUN_TAG"
+  fi
+  export CHECKPOINT_GCS_URI="${DVC_BUCKET}/checkpoints/experiments/$RUN_TAG"
+  export METRICS_GCS_URI="${DVC_BUCKET}/repro-artifacts/${METRICS_TAG:-$RUN_TAG}"
+
+  echo "experiment $RUN_TAG: lr=$LR batch=$BATCH_SIZE steps=$MAX_STEPS val_frac=$VAL_FRAC"
+  echo "artefacts -> $MODEL_GCS_URI"
+
+  # Re-check CUDA in the RUN environment, with the exact invocation training uses. Setup's check
+  # cannot catch a revert that happens after it, which is how a GPU job spent 27 minutes doing
+  # 100 CPU steps. Fail here instead: paying for an L4 to run on CPU is worse than not starting.
+  uv run --no-sync --group train python -c "import torch,sys; ok=torch.cuda.is_available(); print('run-env CUDA:', ok, '| torch', torch.__version__); sys.exit(0 if ok else 1)"
+  # --no-sync is load-bearing, not tidiness. Without it `uv run --group train` re-resolves the
+  # environment and reverts setup's CUDA-matched torch to the locked default cu130 wheel, which
+  # this VM's driver cannot run -> torch.cuda.is_available() False -> device: cpu at ~16 s/step.
+  # Measured: an L4 job ran 100 steps in 27 minutes on CPU while setup had reported CUDA fine,
+  # because the revert happens AFTER setup's fail-fast check. 20k steps would have taken ~90 h.
+  if [ "$MODE" = "repair_cv" ]; then
+    echo "repair_cv is not part of this repository." >&2
+    exit 2
+  fi
+  if [ "$MODE" = "geneval" ]; then
+    # Appendix-B evaluation of an ALREADY-trained editor: restore the loadable folder from its
+    # checkpoint (the model dir predates the copy-out fix for older runs), then generate and score.
+    # On a GPU because 650M generation is 25k forward passes and the dev laptop is memory-starved.
+    TRAINER="geneval"
+  fi
+  if [ "$MODE" = "evotune" ]; then
+    # Builds its own train/val corpus from the family FASTA, then MLM-adapts the trunk. Self
+    # contained: needs no pair file and no prior checkpoint beyond the base ESM-2.
+    TRAINER="evotune"
+  fi
+  if [ "$MODE" = "branching_flows" ]; then
+    echo "branching_flows is not part of this repository." >&2
+    exit 2
+  fi
+  if [ "$MODE" = "calibrate" ]; then
+    # Not a training run: it times the real step across batch sizes and reports MFU. Job 21 hit
+    # 0.6% MFU, so "rent a bigger GPU" was about to be the wrong answer to a launch-bound loop.
+    # Minutes, not hours, and it saves nothing — measurement only.
+    TRAINER="calibrate"
+  fi
+
+  # Both trainers run with `set -e` relaxed so a failure still reaches the artifact copy-back below.
+  # A failed run's metrics are worth MORE than a successful one's, not less, and under a strict
+  # `set -e` a non-zero trainer exit skipped the copy-back entirely -- so the runs whose output
+  # mattered most were the ones that banked nothing.
+  set +e
+  if [ "$TRAINER" = "geneval" ]; then
+    uv run --no-sync --group train editjumps restore-editor \
+      --checkpoint "${DVC_BUCKET}/checkpoints/experiments/$RUN_TAG/checkpoint.pt" \
+      --output-folder "data/pretrain/eval_$RUN_TAG" --model-name "$MODEL_NAME" \
+      ${RATE_HEAD:+--rate-head "$RATE_HEAD"} ${Q_HEAD:+--q-head "$Q_HEAD"}
+    uv run --no-sync --group train editjumps generation-eval \
+      --model-folder "data/pretrain/eval_$RUN_TAG" \
+      --pairs "$PAIRS" \
+      ${RATE_HEAD:+--rate-head "$RATE_HEAD"} ${Q_HEAD:+--q-head "$Q_HEAD"} \
+      ${FAMILY:+--family-fasta "$FAMILY"} ${PLL_MODEL:+--pll-model "$PLL_MODEL"} \
+      ${CLOCK:+--clock "$CLOCK"} \
+      --n-templates "${N_TEMPLATES:-25}" --n-variants "${N_VARIANTS:-20}" \
+      ${HOLDOUT_SIZE:+--holdout-size "$HOLDOUT_SIZE"} \
+      --metrics-path "metrics/generation_eval_${METRICS_TAG:-$RUN_TAG}.json"
+  elif [ "$TRAINER" = "branching_flows" ]; then
+    echo "branching_flows is not part of this repository." >&2
+    exit 2
+  elif [ "$TRAINER" = "calibrate" ]; then
+    uv run --no-sync --group train editjumps calibrate-throughput \
+      --pairs "$PAIRS" \
+      --model-name data/pretrain/esm2_oas \
+      --batch-sizes "$BATCH_SIZES" \
+      --metrics-path metrics/calibration.json
+  elif [ "$TRAINER" = "evotune" ]; then
+    uv run --no-sync --group train editjumps evotune \
+      --family-fasta "$EVOTUNE_FAMILY" \
+      --output-folder data/pretrain \
+      --model-dir-name "esm2_evotuned_$RUN_TAG" \
+      ${EVOTUNE_DISJOINT_PAIRS:+--disjoint-from-pairs "$EVOTUNE_DISJOINT_PAIRS"} \
+      ${MODEL_NAME:+--model-name "$MODEL_NAME"} \
+      --max-steps "$MAX_STEPS" \
+      --batch-size "$BATCH_SIZE" \
+      --metrics-path "metrics/evotune_esm.json"
+  elif [ "$TRAINER" = "repair_cv" ]; then
+    echo "repair_cv is not part of this repository." >&2
+    exit 2
+  else
+    uv run --no-sync --group train editjumps train-edit-flows \
+      --pairs "$PAIRS" \
+      --model-name "$MODEL_NAME" \
+      ${SCHEDULE:+--schedule "$SCHEDULE"} \
+      ${RATE_HEAD:+--rate-head "$RATE_HEAD"} \
+      ${Q_HEAD:+--q-head "$Q_HEAD"} \
+      ${LOSS:+--loss "$LOSS"} \
+      --output-folder "data/pretrain/edit_flows_$RUN_TAG" \
+      --max-steps "$MAX_STEPS" \
+      --save-steps "$SAVE_STEPS" \
+      --batch-size "$BATCH_SIZE" \
+      --lr "$LR" \
+      --val-frac "$VAL_FRAC" \
+      --eval-steps "$EVAL_STEPS" \
+      --val-pairs "$VAL_PAIRS" \
+      --patience "$PATIENCE" \
+      --min-delta "$MIN_DELTA" \
+      --run-tag "$RUN_TAG" \
+      --checkpoint-uri "${DVC_BUCKET}/checkpoints/experiments/$RUN_TAG"
+  fi
+  TRAIN_STATUS=$?
+  set -e
+  echo "trainer exited with status $TRAIN_STATUS; salvaging artifacts before teardown"
+
+  # A local-fallback run's metrics live only in mlflow.db on this VM, which the managed job tears
+  # down on completion. Copy them out, keyed by RUN_TAG so concurrent experiments do not overwrite
+  # each other. Without this an experiment can finish "successfully" and leave nothing behind.
+  [ -f mlflow.db ] && gcloud storage cp mlflow.db \
+    "${DVC_BUCKET}/repro-artifacts/mlflow-${METRICS_TAG:-$RUN_TAG}.db" || true
+  # The aggregated metrics JSON is written on this VM and dies with it. Only the per-fold JSONs
+  # survived the first CV run (the resume feature uploads those), so the summary had to be
+  # recomputed from them afterwards. Copy the metrics out too, keyed by RUN_TAG.
+  # Trailing `|| true`: this is an AND-list under `set -e`, so an `ls` that found nothing would take
+  # its non-zero status to the top level and exit the script -- before the MODEL upload below, which
+  # is the one thing that must never be skipped.
+  # Only the JSONs this run actually wrote -- see RUN_START_MARKER above. `find -newer` rather
+  # than a glob, so a checkout's ~210 tracked metrics files stay out of the bucket. Still `|| true`
+  # throughout: this is an AND-list under `set -e`, and an empty result must not exit the script
+  # before the MODEL upload below, which is the one thing that must never be skipped.
+  find metrics -maxdepth 1 -name '*.json' -newer "$RUN_START_MARKER" -print 2>/dev/null | while read -r m; do \
+    gcloud storage cp "$m" \
+      "${DVC_BUCKET}/repro-artifacts/${METRICS_TAG:-$RUN_TAG}-$(basename "$m")" || true; \
+  done || true
+  rm -f "$RUN_START_MARKER" || true
+
+  # The TRAINED MODEL ITSELF. This was missing, and it cost job 21: 6.5 h across a preemption,
+  # finished cleanly, and the only surviving copy of its weights was checkpoint.pt in GCS — which
+  # holds the state dict but is NOT the layout load_trained reads (encoder/ + evoflows_model.pt),
+  # so nothing could open what the run produced. checkpoint.pt is written for *resume*; this is
+  # written for *use*, and the two are not interchangeable. `editjumps restore-editor` converts one
+  # to the other after the fact; this makes that unnecessary next time.
+  if [ -d "data/pretrain/edit_flows_$RUN_TAG" ]; then
+    gcloud storage cp -r "data/pretrain/edit_flows_$RUN_TAG" \
+      "${DVC_BUCKET}/models/edit_flows/$RUN_TAG" || true
+  fi
+  # The EVOTUNED TRUNK, and its corpus. The corpus goes too because the evotuned baselines read it for
+  # their entropy profile, so a trunk without it is only half the artefact -- and the last time this
+  # was skipped, both were unrecoverable and the baselines could not be re-run at all.
+  if [ -d "data/pretrain/esm2_evotuned_$RUN_TAG" ]; then
+    gcloud storage cp -r "data/pretrain/esm2_evotuned_$RUN_TAG" "$MODEL_GCS_URI" || true
+    for c in data/pretrain/evotune_family.train.txt.gz data/pretrain/evotune_family.val.txt.gz; do
+      [ -f "$c" ] && gcloud storage cp "$c" "$MODEL_GCS_URI/$(basename $c)" || true
+    done
+  fi
+
+  # Exit with the trainer's status, not the copy-back's, so a failed run still fails the job.
+  exit $TRAIN_STATUS

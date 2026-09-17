@@ -1,0 +1,164 @@
+[project]
+name = "editjumps"             # Name of the project
+version = "0.0.1"                       # Version
+# Requires Python >= 3.10 for PEP 604 unions and strict zip.
+requires-python = ">=3.10"
+description = "Fine-grained protein sequence editing with learned generative jump edits: an EvoFlows reproduction."
+readme = "README.md"
+authors = [{ name = "Anonymous" }]
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = [
+    "antibody",
+    "protein-engineering",
+    "sequence-editing",
+    "flow-matching",
+    "esm-2",
+    "bioinformatics",
+    "reproducible-research",
+]
+# Not published to PyPI.
+classifiers = [
+    "Private :: Do Not Upload",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Typing :: Typed",
+]
+# Runtime dependencies.
+dependencies = [
+    "pandas",
+    "typer",
+    "scikit-learn",
+    "mlflow",
+    "requests>=2.34.2",
+    "beautifulsoup4>=4.15.0",
+    "rapidfuzz>=3.14.5",
+    "pyyaml",
+    "anarci",
+]
+
+[project.urls]
+Repository = "https://anonymous.4open.science/r/editjumps"
+Issues = "https://anonymous.4open.science/r/editjumps/issues"
+Documentation = "https://anonymous.4open.science/r/editjumps/tree/main/docs"
+
+# Console entry point: `editjumps <command>` drives the whole pipeline; see editjumps/main.py.
+[project.scripts]
+editjumps = "editjumps.main:app"
+
+# Build backend. Locally this is an editable install so the `editjumps` console script lands
+# in .venv/bin, but `uv build` also produces a wheel that installs standalone into a clean
+# environment. The project is still not published to any package index.
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# The distribution and the import name are both `editjumps`. This used to say ["src"], which
+# meant every module was reached as `src.core.…` and an installed copy put a top-level `src`
+# on the user's path, colliding with every other project that made the same mistake. Do not
+# rename it back to a layout directory.
+[tool.hatch.build.targets.wheel]
+packages = ["editjumps"]
+
+# ----------------
+# UV
+# ----------------
+# Additional dependencies only used in dev
+[dependency-groups]
+analysis = [
+    "fair-esm>=2.0.0",
+    "umap-learn>=0.5.12",
+]
+dev = [
+    "ruff",
+    "ty",
+    "pre-commit",
+    "pytest",
+    # Dev type stubs and tooling.
+    "pandas-stubs",
+    "types-requests>=2.33.0.20260518",
+    "types-beautifulsoup4>=4.12.0.20250516",
+    "dvc[gs]>=3.67.1",
+]
+notebook = [
+    "jupyterlab",
+]
+train = [
+    "accelerate>=1.14.0",
+    "datasets>=5.0.0",
+    "fair-esm>=2.0.0",
+    "torch>=2.12.1",
+    "transformers>=5.12.1",
+]
+[tool.uv]
+package = true
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+
+# ----------------
+# Ruff
+# ----------------
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+ignore = [
+    "D104", # Ignore empty init files
+    "D413", # Missing blank line after last section
+    "D203", # Blank line before class
+    "D213", # First line multiline
+]
+select = [
+    "E",
+    "D",
+    "F",
+    "I",
+    "ANN"
+]
+
+# ----------------
+# pytest
+# ----------------
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = [
+    "editjumps/test",
+    "editjumps/core/edit_flows",
+    "editjumps/core/evodiff_msa",
+    "editjumps/core/evotune",
+]
+addopts = "--import-mode=importlib"
+
+
+# ----------------
+# ty
+# ----------------
+# Exclude modules requiring the optional train dependency group.
+[tool.ty.src]
+exclude = [
+    "editjumps/pipeline/train/pretrain_esm.py",
+    "editjumps/pipeline/train/convert_esm_checkpoint.py",
+    "editjumps/core/edit_flows/loss.py",
+    "editjumps/core/pseudo_likelihood.py",
+    "editjumps/pipeline/train/evoflows.py",
+    "editjumps/pipeline/train/calibrate_throughput.py",
+    "editjumps/pipeline/evaluate/generation_eval.py",
+    "editjumps/pipeline/evaluate/figure_extract.py",
+    "editjumps/core/evodiff_msa/evodiff_msa_runner.py",
+    "editjumps/repo/_py314_shims/sitecustomize.py",
+]
+
+[tool.ty.rules]
+possibly-missing-attribute = "ignore"
+unused-ignore-comment = "ignore"

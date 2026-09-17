@@ -1,0 +1,559 @@
+{
+  "seed": 0,
+  "draws": [
+    100,
+    2000
+  ],
+  "unit": "template",
+  "pairs": "data/pretrain/oas_homolog_pairs.tsv.gz",
+  "method": "Paired percentile bootstrap over the 20 template blocks of each cell's committed FASTA. Each draw resamples ONE set of template indices and scores BOTH methods on it, so the variance the two share -- which templates the split handed them -- cancels. Blocks are matched to templates by nearest edit distance, because generation_eval walks a seeded permutation of split.templates while the baselines walk it in order; at seed 0 the recovered mapping is exactly random.Random(0).sample(range(20), 20) for both families, which is the independent check on it. Centres are the runs' own emitted values, reproduced from the committed FASTAs to 1e-9. Read paired_diff_ci; the marginal a_ci/b_ci are SPREADS shifted ~0.08 below their centres, because a with-replacement draw leaves 12.8 distinct templates and this estimator moves with the effective sample size.",
+  "template_mapping": {
+    "metrics/disjoint/editor-ty1.json": {
+      "model": [
+        12,
+        13,
+        1,
+        8,
+        15,
+        6,
+        19,
+        4,
+        7,
+        5,
+        9,
+        3,
+        2,
+        11,
+        17,
+        0,
+        14,
+        16,
+        18,
+        10
+      ],
+      "random_mutations": [
+        12,
+        13,
+        1,
+        8,
+        15,
+        6,
+        19,
+        4,
+        7,
+        5,
+        9,
+        3,
+        2,
+        11,
+        17,
+        0,
+        14,
+        16,
+        18,
+        10
+      ],
+      "random_homolog_pairing": []
+    },
+    "metrics/disjoint/evodiff-msa-ty1.json": {
+      "evodiff_msa_inpaint": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ]
+    },
+    "metrics/disjoint/evotune-forced-ty1.json": {
+      "evotuned_plm_forced_substitutions": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ]
+    },
+    "metrics/disjoint/evotune-ty1.json": {
+      "evotuned_plm": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ]
+    }
+  },
+  "comparisons": [
+    {
+      "family": "data/interim/seed_families/Anti-SARS-CoV-2_VHH_Ty1.fasta",
+      "metric": "covariance_agreement",
+      "a": {
+        "cell": "metrics/disjoint/editor-ty1.json",
+        "set": "model",
+        "value": 0.9118676208523727
+      },
+      "b": {
+        "cell": "metrics/disjoint/evotune-ty1.json",
+        "set": "evotuned_plm",
+        "value": 0.9068523542067184
+      },
+      "margin": 0.005015266645654326,
+      "seed": 0,
+      "unit": "template",
+      "by_draws": {
+        "100": {
+          "paired_diff_ci": [
+            -0.02240988047037007,
+            0.04776715487940619
+          ],
+          "includes_zero": true,
+          "paired_diff_mean": 0.006668628615459718,
+          "share_of_draws_a_ahead": 0.6,
+          "a_ci": [
+            0.7344466392879263,
+            0.8917080732071468
+          ],
+          "b_ci": [
+            0.7172383725767744,
+            0.8912970299075229
+          ],
+          "a_bootstrap_mean": 0.8256613777606264,
+          "b_bootstrap_mean": 0.8189927491451665,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.1110785226690938,
+              0.1238072234211921
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        },
+        "2000": {
+          "paired_diff_ci": [
+            -0.02051033704177163,
+            0.04368970825371221
+          ],
+          "includes_zero": true,
+          "paired_diff_mean": 0.007398564110488251,
+          "share_of_draws_a_ahead": 0.643,
+          "a_ci": [
+            0.7390524555901693,
+            0.8934290323193403
+          ],
+          "b_ci": [
+            0.7122709172561195,
+            0.8963091179556718
+          ],
+          "a_bootstrap_mean": 0.8304342908957991,
+          "b_bootstrap_mean": 0.8230357267853108,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.09930099113613866,
+              0.11545974439145501
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        }
+      }
+    },
+    {
+      "family": "data/interim/seed_families/Anti-SARS-CoV-2_VHH_Ty1.fasta",
+      "metric": "mip_agreement",
+      "a": {
+        "cell": "metrics/disjoint/editor-ty1.json",
+        "set": "model",
+        "value": 0.8267047022284507
+      },
+      "b": {
+        "cell": "metrics/disjoint/evotune-ty1.json",
+        "set": "evotuned_plm",
+        "value": 0.8126003232182182
+      },
+      "margin": 0.014104379010232537,
+      "seed": 0,
+      "unit": "template",
+      "by_draws": {
+        "100": {
+          "paired_diff_ci": [
+            -0.07436584862194418,
+            0.051171494715016363
+          ],
+          "includes_zero": true,
+          "paired_diff_mean": -0.009895105336240754,
+          "share_of_draws_a_ahead": 0.34,
+          "a_ci": [
+            0.5819527383051233,
+            0.8041481612308221
+          ],
+          "b_ci": [
+            0.5948516517015667,
+            0.8298040581021373
+          ],
+          "a_bootstrap_mean": 0.714726241437129,
+          "b_bootstrap_mean": 0.7246213467733699,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.13755725108022943,
+              0.1648063537373935
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        },
+        "2000": {
+          "paired_diff_ci": [
+            -0.06563780982599987,
+            0.04028951579829432
+          ],
+          "includes_zero": true,
+          "paired_diff_mean": -0.012037534460598735,
+          "share_of_draws_a_ahead": 0.3515,
+          "a_ci": [
+            0.5819527383051233,
+            0.8055297695036329
+          ],
+          "b_ci": [
+            0.586919974269541,
+            0.8275468108570051
+          ],
+          "a_bootstrap_mean": 0.7173680794799675,
+          "b_bootstrap_mean": 0.7294056139405662,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.15309918614160567,
+              0.1240179564308661
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        }
+      }
+    },
+    {
+      "family": "data/interim/seed_families/Anti-SARS-CoV-2_VHH_Ty1.fasta",
+      "metric": "covariance_agreement",
+      "a": {
+        "cell": "metrics/disjoint/evodiff-msa-ty1.json",
+        "set": "evodiff_msa_inpaint",
+        "value": 0.8918648144072059
+      },
+      "b": {
+        "cell": "metrics/disjoint/evotune-ty1.json",
+        "set": "evotuned_plm",
+        "value": 0.9068523542067184
+      },
+      "margin": -0.014987539799512506,
+      "seed": 0,
+      "unit": "template",
+      "by_draws": {
+        "100": {
+          "paired_diff_ci": [
+            -0.04111957024182544,
+            0.008358559920970121
+          ],
+          "includes_zero": true,
+          "paired_diff_mean": -0.018392516102525236,
+          "share_of_draws_a_ahead": 0.04,
+          "a_ci": [
+            0.7053315676389504,
+            0.8753104791413711
+          ],
+          "b_ci": [
+            0.7172383725767744,
+            0.8912970299075229
+          ],
+          "a_bootstrap_mean": 0.8006002330426414,
+          "b_bootstrap_mean": 0.8189927491451665,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.04111957024182544,
+              0.008358559920970121
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        },
+        "2000": {
+          "paired_diff_ci": [
+            -0.0390436407217809,
+            0.006042451346108368
+          ],
+          "includes_zero": true,
+          "paired_diff_mean": -0.016352247733178622,
+          "share_of_draws_a_ahead": 0.0725,
+          "a_ci": [
+            0.7074647853901442,
+            0.8769599531584646
+          ],
+          "b_ci": [
+            0.7122709172561195,
+            0.8963091179556718
+          ],
+          "a_bootstrap_mean": 0.8066834790521322,
+          "b_bootstrap_mean": 0.8230357267853108,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.0390436407217809,
+              0.006042451346108368
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        }
+      }
+    },
+    {
+      "family": "data/interim/seed_families/Anti-SARS-CoV-2_VHH_Ty1.fasta",
+      "metric": "mip_agreement",
+      "a": {
+        "cell": "metrics/disjoint/evodiff-msa-ty1.json",
+        "set": "evodiff_msa_inpaint",
+        "value": 0.7793050210501478
+      },
+      "b": {
+        "cell": "metrics/disjoint/evotune-ty1.json",
+        "set": "evotuned_plm",
+        "value": 0.8126003232182182
+      },
+      "margin": -0.03329530216807042,
+      "seed": 0,
+      "unit": "template",
+      "by_draws": {
+        "100": {
+          "paired_diff_ci": [
+            -0.12161399025151343,
+            -0.016693850385897657
+          ],
+          "includes_zero": false,
+          "paired_diff_mean": -0.05516247252876493,
+          "share_of_draws_a_ahead": 0.01,
+          "a_ci": [
+            0.5297827926940292,
+            0.7803203567078749
+          ],
+          "b_ci": [
+            0.5948516517015667,
+            0.8298040581021373
+          ],
+          "a_bootstrap_mean": 0.6694588742446049,
+          "b_bootstrap_mean": 0.7246213467733699,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.12161399025151343,
+              -0.016693850385897657
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        },
+        "2000": {
+          "paired_diff_ci": [
+            -0.10222913374720377,
+            -0.010583577179165138
+          ],
+          "includes_zero": false,
+          "paired_diff_mean": -0.05507255103052851,
+          "share_of_draws_a_ahead": 0.007,
+          "a_ci": [
+            0.5375674548296612,
+            0.7697907032352705
+          ],
+          "b_ci": [
+            0.586919974269541,
+            0.8275468108570051
+          ],
+          "a_bootstrap_mean": 0.6743330629100378,
+          "b_bootstrap_mean": 0.7294056139405662,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.10222913374720377,
+              -0.010583577179165138
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        }
+      }
+    },
+    {
+      "family": "data/interim/seed_families/Anti-SARS-CoV-2_VHH_Ty1.fasta",
+      "metric": "covariance_agreement",
+      "a": {
+        "cell": "metrics/disjoint/evotune-forced-ty1.json",
+        "set": "evotuned_plm_forced_substitutions",
+        "value": 0.87021116899163
+      },
+      "b": {
+        "cell": "metrics/disjoint/evotune-ty1.json",
+        "set": "evotuned_plm",
+        "value": 0.9068523542067184
+      },
+      "margin": -0.03664118521508841,
+      "seed": 0,
+      "unit": "template",
+      "by_draws": {
+        "100": {
+          "paired_diff_ci": [
+            -0.065112483528592,
+            -0.02246162411970254
+          ],
+          "includes_zero": false,
+          "paired_diff_mean": -0.04497208074910256,
+          "share_of_draws_a_ahead": 0.0,
+          "a_ci": [
+            0.6601342034656799,
+            0.8638724589673814
+          ],
+          "b_ci": [
+            0.7172383725767744,
+            0.8912970299075229
+          ],
+          "a_bootstrap_mean": 0.7740206683960639,
+          "b_bootstrap_mean": 0.8189927491451665,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.065112483528592,
+              -0.02246162411970254
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        },
+        "2000": {
+          "paired_diff_ci": [
+            -0.06544487311596237,
+            -0.022890099443597878
+          ],
+          "includes_zero": false,
+          "paired_diff_mean": -0.044867853870193826,
+          "share_of_draws_a_ahead": 0.0,
+          "a_ci": [
+            0.6627020338157201,
+            0.8631860456804984
+          ],
+          "b_ci": [
+            0.7122709172561195,
+            0.8963091179556718
+          ],
+          "a_bootstrap_mean": 0.778167872915117,
+          "b_bootstrap_mean": 0.8230357267853108,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.06544487311596237,
+              -0.022890099443597878
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        }
+      }
+    },
+    {
+      "family": "data/interim/seed_families/Anti-SARS-CoV-2_VHH_Ty1.fasta",
+      "metric": "mip_agreement",
+      "a": {
+        "cell": "metrics/disjoint/evotune-forced-ty1.json",
+        "set": "evotuned_plm_forced_substitutions",
+        "value": 0.7354516441311292
+      },
+      "b": {
+        "cell": "metrics/disjoint/evotune-ty1.json",
+        "set": "evotuned_plm",
+        "value": 0.8126003232182182
+      },
+      "margin": -0.077148679087089,
+      "seed": 0,
+      "unit": "template",
+      "by_draws": {
+        "100": {
+          "paired_diff_ci": [
+            -0.14789949781172707,
+            -0.04974063297213693
+          ],
+          "includes_zero": false,
+          "paired_diff_mean": -0.10517948231181654,
+          "share_of_draws_a_ahead": 0.0,
+          "a_ci": [
+            0.48511047826794884,
+            0.7435757478531647
+          ],
+          "b_ci": [
+            0.5948516517015667,
+            0.8298040581021373
+          ],
+          "a_bootstrap_mean": 0.6194418644615531,
+          "b_bootstrap_mean": 0.7246213467733699,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.14789949781172707,
+              -0.04974063297213693
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        },
+        "2000": {
+          "paired_diff_ci": [
+            -0.1538570721542879,
+            -0.06642820103738278
+          ],
+          "includes_zero": false,
+          "paired_diff_mean": -0.10510287475575024,
+          "share_of_draws_a_ahead": 0.0,
+          "a_ci": [
+            0.4668026020807296,
+            0.739047431589715
+          ],
+          "b_ci": [
+            0.586919974269541,
+            0.8275468108570051
+          ],
+          "a_bootstrap_mean": 0.6243027391848159,
+          "b_bootstrap_mean": 0.7294056139405662,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.1538570721542879,
+              -0.06642820103738278
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        }
+      }
+    }
+  ]
+}

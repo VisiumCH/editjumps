@@ -1,0 +1,137 @@
+{
+  "model": "data/pretrain/eval_B_stock_appA",
+  "clock_normalization": 40.0,
+  "baselines": {
+    "random_mutations": {
+      "levenshtein_to_template": 3.9,
+      "kl_generated_vs_natural": 0.0014153487657923437,
+      "spectrum_mmd": 1.58886752122384,
+      "entropy_delta": 0.09448174753171412,
+      "covariance_agreement": 0.7640840092863899,
+      "mip_agreement": 0.6402226540419192,
+      "js_divergence_positional": 0.03100921061061407,
+      "pairwise_levenshtein_pooled": 23.674,
+      "agreement_reference_n": 200,
+      "alignment_length": 128,
+      "n_scored": 100
+    },
+    "random_homolog_pairing": {
+      "levenshtein_to_template": 21.32,
+      "kl_generated_vs_natural": 0.0001740077911352484,
+      "spectrum_mmd": 0.822860863086843,
+      "entropy_delta": 0.17028525579580156,
+      "covariance_agreement": 0.9406871668625751,
+      "mip_agreement": 0.8427454326385879,
+      "js_divergence_positional": 0.010254292502744435,
+      "pairwise_levenshtein_pooled": 22.494,
+      "agreement_reference_n": 200,
+      "alignment_length": 128,
+      "n_scored": 100
+    }
+  },
+  "n_templates": 10,
+  "n_variants_per_template": 10,
+  "n_generated": 100,
+  "n_natural_reference": 200,
+  "n_natural_aligned": 10,
+  "reference_construction": "single family, inference/holdout disjoint (paper's \u00a74.2)",
+  "alignment": "Needleman-Wunsch projection onto template coordinates (L=128)",
+  "defined_by_the_paper": {
+    "levenshtein_to_template": 3.5700000000000003,
+    "pairwise_levenshtein": 6.515555555555555,
+    "pairwise_levenshtein_pooled": 19.029,
+    "covariance_frobenius_generated": 5.570790234787161,
+    "covariance_frobenius_natural": 7.844641483203676,
+    "interaction_strength_mean_generated": 0.01491918475022473,
+    "interaction_strength_mean_natural": 0.021242310802975423,
+    "mip_mean_generated": 3.277170472926888e-18,
+    "mip_mean_natural": -2.2124500582282325e-18,
+    "covariance_agreement": 0.8288771477900886,
+    "mip_agreement": 0.7594760605885776,
+    "agreement_reference_n": 200,
+    "kl_generated_vs_natural": 0.0013803748034235445,
+    "spectrum_mmd": 1.2741663941573749,
+    "covariance_agreement_ceiling": 0.9667267259911765,
+    "mip_agreement_ceiling": 0.9169195360489971,
+    "ceiling_n": 300.0
+  },
+  "mmd_diagnostic": {
+    "spectrum_mmd_unbiased_squared": 1.0927465154053095,
+    "n_generated": 100,
+    "n_reference": 200,
+    "comparable_only_at_equal_n": true
+  },
+  "diversity_novelty": {
+    "model": {
+      "diversity": 19.3735,
+      "novelty": 6.52,
+      "novelty_templates": 4.9,
+      "novelty_delta": 1.6199999999999992,
+      "novelty_detail": {
+        "mean": 6.52,
+        "median": 6.0,
+        "min_of_means": 2.0,
+        "n_queries": 100,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 4.9,
+        "median": 5.0,
+        "min_of_means": 1.0,
+        "n_queries": 10,
+        "n_reference": 20000
+      }
+    },
+    "random_mutations": {
+      "diversity": 24.0645,
+      "novelty": 8.54,
+      "novelty_templates": 4.9,
+      "novelty_delta": 3.639999999999999,
+      "novelty_detail": {
+        "mean": 8.54,
+        "median": 8.5,
+        "min_of_means": 4.0,
+        "n_queries": 100,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 4.9,
+        "median": 5.0,
+        "min_of_means": 1.0,
+        "n_queries": 10,
+        "n_reference": 20000
+      }
+    },
+    "random_homolog_pairing": {
+      "diversity": 22.4205,
+      "novelty": 2.97,
+      "novelty_templates": 4.9,
+      "novelty_delta": -1.9300000000000002,
+      "novelty_detail": {
+        "mean": 2.97,
+        "median": 0.0,
+        "min_of_means": 0.0,
+        "n_queries": 100,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 4.9,
+        "median": 5.0,
+        "min_of_means": 1.0,
+        "n_queries": 10,
+        "n_reference": 20000
+      }
+    }
+  },
+  "esm2_pseudo_log_likelihood": {},
+  "our_interpretation": {
+    "entropy_delta": 0.06490409558229221,
+    "js_divergence": 0.0003466572947106139,
+    "js_divergence_positional": 0.020699104230050364,
+    "profile_log_likelihood": -79.43597358600385
+  },
+  "not_implemented": [
+    "esm2_pseudo_log_likelihood (B.2) - pass --pll-model"
+  ],
+  "caveats": []
+}

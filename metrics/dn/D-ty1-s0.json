@@ -1,0 +1,134 @@
+{
+  "model": "data/pretrain/eval_D_stock_linear",
+  "clock_normalization": 40.0,
+  "baselines": {
+    "random_mutations": {
+      "levenshtein_to_template": 4.846666666666667,
+      "kl_generated_vs_natural": 0.0015386785703650054,
+      "spectrum_mmd": 1.328334169803171,
+      "entropy_delta": 0.17251115070694883
+    },
+    "random_homolog_pairing": {
+      "levenshtein_to_template": 24.066666666666666,
+      "kl_generated_vs_natural": 0.00014610152670280267,
+      "spectrum_mmd": 0.49064186984443175,
+      "entropy_delta": 0.11382676228100075
+    }
+  },
+  "n_templates": 30,
+  "n_variants_per_template": 10,
+  "n_generated": 300,
+  "n_natural_reference": 1000,
+  "n_natural_aligned": 30,
+  "reference_construction": "single family, inference/holdout disjoint (paper's \u00a74.2)",
+  "alignment": "Needleman-Wunsch projection onto template coordinates (L=120)",
+  "defined_by_the_paper": {
+    "levenshtein_to_template": 5.3566666666666665,
+    "pairwise_levenshtein": 9.782222222222222,
+    "covariance_frobenius_generated": 5.043984224772431,
+    "covariance_frobenius_natural": 5.2902173868377105,
+    "interaction_strength_mean_generated": 0.014112057325460529,
+    "interaction_strength_mean_natural": 0.01286389662812885,
+    "mip_mean_generated": 3.756880994570327e-18,
+    "mip_mean_natural": -2.325011325441137e-19,
+    "kl_generated_vs_natural": 0.0012561122664409754,
+    "spectrum_mmd": 1.008292561159159
+  },
+  "mmd_diagnostic": {
+    "spectrum_mmd_unbiased_squared": 0.8130212321351564,
+    "n_generated": 300,
+    "n_reference": 1000,
+    "comparable_only_at_equal_n": true
+  },
+  "diversity_novelty": {
+    "model": {
+      "diversity": 26.0295,
+      "novelty": 8.413333333333334,
+      "novelty_templates": 5.633333333333334,
+      "novelty_delta": 2.7800000000000002,
+      "novelty_detail": {
+        "mean": 8.413333333333334,
+        "median": 7.5,
+        "min_of_means": 1.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 5.633333333333334,
+        "median": 4.5,
+        "min_of_means": 1.0,
+        "n_queries": 30,
+        "n_reference": 20000
+      }
+    },
+    "random_mutations": {
+      "diversity": 30.6895,
+      "novelty": 10.106666666666667,
+      "novelty_templates": 5.633333333333334,
+      "novelty_delta": 4.473333333333334,
+      "novelty_detail": {
+        "mean": 10.106666666666667,
+        "median": 9.0,
+        "min_of_means": 6.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 5.633333333333334,
+        "median": 4.5,
+        "min_of_means": 1.0,
+        "n_queries": 30,
+        "n_reference": 20000
+      }
+    },
+    "random_homolog_pairing": {
+      "diversity": 24.332,
+      "novelty": 3.3266666666666667,
+      "novelty_templates": 5.633333333333334,
+      "novelty_delta": -2.306666666666667,
+      "novelty_detail": {
+        "mean": 3.3266666666666667,
+        "median": 0.0,
+        "min_of_means": 0.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 5.633333333333334,
+        "median": 4.5,
+        "min_of_means": 1.0,
+        "n_queries": 30,
+        "n_reference": 20000
+      }
+    }
+  },
+  "esm2_pseudo_log_likelihood": {
+    "generated": {
+      "mean": -1.9028882965617815,
+      "sum_mean": -19.028882965617814,
+      "n": 300
+    },
+    "natural_holdout": {
+      "mean": -1.8644210273829753,
+      "sum_mean": -18.644210273829753,
+      "n": 1000
+    },
+    "random_mutations": {
+      "mean": -2.0599745139831986,
+      "sum_mean": -20.599745139831988,
+      "n": 300
+    },
+    "random_homolog_pairing": {
+      "mean": -1.8855608520835327,
+      "sum_mean": -18.85560852083533,
+      "n": 300
+    }
+  },
+  "our_interpretation": {
+    "entropy_delta": 0.11070284849998857,
+    "js_divergence": 0.00021039616921587673,
+    "profile_log_likelihood": -72.80759370538995
+  },
+  "not_implemented": [],
+  "caveats": []
+}

@@ -1,0 +1,105 @@
+{
+  "defined_by_the_paper": {
+    "levenshtein_to_template": 2.8725,
+    "pairwise_levenshtein": 5.302368421052632,
+    "pairwise_levenshtein_pooled": 25.3405,
+    "covariance_frobenius_generated": 5.680719773331994,
+    "covariance_frobenius_natural": 6.7588257116158745,
+    "interaction_strength_mean_generated": 0.018499624787778248,
+    "interaction_strength_mean_natural": 0.01971108940385413,
+    "mip_mean_generated": -9.478715803438601e-20,
+    "mip_mean_natural": 1.8805772154022187e-18,
+    "covariance_agreement": 0.7686974081176848,
+    "mip_agreement": 0.6013348397209938,
+    "agreement_reference_n": 200.0,
+    "kl_generated_vs_natural": 0.0023635646442998347,
+    "spectrum_mmd": 1.6387800340497176,
+    "covariance_agreement_ceiling": 0.9693624692968776,
+    "mip_agreement_ceiling": 0.928044694112564,
+    "ceiling_n": 300.0,
+    "levenshtein_to_own_template": 2.8725
+  },
+  "mmd_diagnostic": {
+    "spectrum_mmd_unbiased_squared": 2.352522939257682,
+    "n_generated": 400,
+    "n_reference": 200,
+    "comparable_only_at_equal_n": true
+  },
+  "our_interpretation": {
+    "entropy_delta": 0.08290282216090689,
+    "js_divergence": 0.0005769416940879617,
+    "js_divergence_positional": 0.019468813047266397,
+    "profile_log_likelihood": -77.6073583446596
+  },
+  "diversity_novelty": {
+    "diversity": 25.3405,
+    "novelty": 9.1725,
+    "novelty_templates": 8.35,
+    "novelty_delta": 0.8224999999999998,
+    "novelty_detail": {
+      "mean": 9.1725,
+      "median": 8.0,
+      "min_of_means": 3.0,
+      "n_queries": 400,
+      "n_reference": 20000
+    },
+    "novelty_templates_detail": {
+      "mean": 8.35,
+      "median": 8.0,
+      "min_of_means": 3.0,
+      "n_queries": 20,
+      "n_reference": 20000
+    }
+  },
+  "method": "evodiff_msa",
+  "mode": "inpaint",
+  "model": "msa-oa-dm-maxsub",
+  "family": "data/interim/seed_families/Anti-SARS-CoV-2_VHH_Ty1.fasta",
+  "temperature": 1.0,
+  "forced_substitutions": false,
+  "msa": {
+    "source": "the family's TRAIN part (\u00a74.2), never the scoring holdout",
+    "n_available": 38333,
+    "n_aligned_per_template": 256,
+    "n_rows_conditioned_on": [
+      64
+    ],
+    "selection_type": "MaxHamming",
+    "alignment": "Needleman-Wunsch projection onto each template's own coordinates (ours, not theirs - see build_alignment)"
+  },
+  "mutation_budget": {
+    "target": 4,
+    "matched": true,
+    "budget_mode": "realised (top up until the budget mutates)",
+    "mean_realised": 2.8725,
+    "sd_realised": 0.9829769834538344,
+    "hit_budget_fraction": 0.31
+  },
+  "n_templates": 20,
+  "n_variants_per_template": 20,
+  "n_generated": 400,
+  "n_natural_reference": 200,
+  "model_forward_passes": 7939,
+  "alignment": "Needleman-Wunsch projection onto the first template's coordinates (L=121)",
+  "esm2_pseudo_log_likelihood": {},
+  "not_implemented": [
+    "esm2_pseudo_log_likelihood (B.2) - pass --pll-model"
+  ],
+  "ours_not_theirs": [
+    "Where the budget goes: EvoDiff-MSA has no positional model and \u00a74.2 does not say, so positions are drawn UNIFORMLY, matching the paper's own random-mutation baseline.",
+    "Inpainting at all: evodiff ships no MSA-inpainting entry point, only whole-query generation, which cannot be budget-matched. Masking a subset of x0's positions and decoding only those is ours.",
+    "The candidate set (20 standard amino acids), the temperature and the forced-substitution switch. Their own per-step rule is unchanged in --mode unconditional.",
+    "That the MSA is built from the family's train part, and aligned by Needleman-Wunsch projection onto the template rather than by a profile aligner."
+  ],
+  "theirs_not_ours": [
+    "The model, the released weights (msa-oa-dm-maxsub) and the tokenizer: evodiff 1.1.2, run in its own environment (scripts/install_evodiff.sh), never reimplemented here.",
+    "The MSA subsampling: evodiff.data.subsample_msa, unchanged, including MaxHamming.",
+    "In --mode unconditional, the whole decoding loop: evodiff.generate_msa.generate_query_oadm_msa_simple, called verbatim."
+  ],
+  "caveats": [
+    "Set-level metrics (levenshtein, KL, MMD, diversity/novelty, PLL) are comparable to a generation-eval or evotune-baseline run on the same family with the same --seed, --n-templates, --n-variants and --holdout-size, and only then: the biased MMD V-statistic is not comparable across template counts.",
+    "Alignment-dependent metrics (entropy_delta, covariance, MIp) use the FIRST template of the split as their coordinate system, the same choice evotune_baseline makes. Comparable between the three model-based baselines; only approximately so against the editor, whose own permutation puts a different template first.",
+    "--mode unconditional is NOT budget-matched: its mutation count is whatever the model produces, so its distances to the holdout answer a different question from every other row of the \u00a74.2 comparison.",
+    "This baseline never sees the scoring holdout, in the MSA or anywhere else. The edit-flow model it is compared against draws its pairs from corpus-wide clustering rather than from this per-family split, so it carries no such guarantee - the comparison is conservative in the baseline's disfavour, not in its favour."
+  ]
+}

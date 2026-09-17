@@ -1,0 +1,79 @@
+{
+  "defined_by_the_paper": {
+    "levenshtein_to_template": 4.0,
+    "pairwise_levenshtein": 7.432105263157894,
+    "pairwise_levenshtein_pooled": 27.0525,
+    "covariance_frobenius_generated": 5.446682242487177,
+    "covariance_frobenius_natural": 6.7588257116158745,
+    "interaction_strength_mean_generated": 0.01871185983776987,
+    "interaction_strength_mean_natural": 0.01971108940385413,
+    "mip_mean_generated": 3.4692099840585283e-18,
+    "mip_mean_natural": 1.8805772154022187e-18,
+    "covariance_agreement": 0.7380383370581355,
+    "mip_agreement": 0.5612305643911317,
+    "agreement_reference_n": 200.0,
+    "kl_generated_vs_natural": 0.0031544962184558837,
+    "spectrum_mmd": 1.744226189460523,
+    "levenshtein_to_own_template": 4.0
+  },
+  "mmd_diagnostic": {
+    "spectrum_mmd_unbiased_squared": 2.7011197437689702,
+    "n_generated": 400,
+    "n_reference": 200,
+    "comparable_only_at_equal_n": true
+  },
+  "our_interpretation": {
+    "entropy_delta": 0.1338749278569421,
+    "js_divergence": 0.0007697428012480166,
+    "js_divergence_positional": 0.01952184786852861,
+    "profile_log_likelihood": -84.51378691086218
+  },
+  "diversity_novelty": {
+    "diversity": 27.0525,
+    "novelty": 10.4925,
+    "novelty_templates": 8.35,
+    "novelty_delta": 2.1425,
+    "novelty_detail": {
+      "mean": 10.4925,
+      "median": 10.0,
+      "min_of_means": 4.0,
+      "n_queries": 400,
+      "n_reference": 20000
+    },
+    "novelty_templates_detail": {
+      "mean": 8.35,
+      "median": 8.0,
+      "min_of_means": 3.0,
+      "n_queries": 20,
+      "n_reference": 20000
+    }
+  },
+  "method": "evotuned_plm_forced_substitutions",
+  "model": "data/pretrain/esm2_evotuned",
+  "family": "data/interim/seed_families/Anti-SARS-CoV-2_VHH_Ty1.fasta",
+  "temperature": 1.0,
+  "forced_substitutions": true,
+  "mutation_budget": {
+    "target": 4,
+    "budget_mode": "realised (top up until the budget mutates)",
+    "mean_realised": 4.0,
+    "sd_realised": 0.0,
+    "mean_masked": 4.0,
+    "hit_budget_fraction": 1.0
+  },
+  "n_templates": 20,
+  "n_variants_per_template": 20,
+  "n_generated": 400,
+  "n_natural_reference": 200,
+  "n_train_for_profile": 36417,
+  "alignment": "Needleman-Wunsch projection onto the first template's coordinates (L=121)",
+  "esm2_pseudo_log_likelihood": {},
+  "not_implemented": [
+    "esm2_pseudo_log_likelihood (B.2) - pass --pll-model"
+  ],
+  "caveats": [
+    "Set-level metrics (levenshtein, KL, MMD, diversity/novelty, PLL) are comparable to a generation-eval run on the same family with the same --seed, --n-templates, --n-variants and --holdout-size, and only then: the biased MMD V-statistic is not comparable across template counts.",
+    "Alignment-dependent metrics (entropy_delta, covariance, MIp) use the FIRST template of the split as their coordinate system, while generation_eval uses whichever template its own permutation puts first. Comparable between the two evotuned baselines; only approximately so against the editor.",
+    "This baseline's evotuning excludes the scoring holdout. The edit-flow model it is compared against draws its pairs from corpus-wide clustering, not from this per-family split, so it carries no such guarantee \u2014 the comparison is conservative in the baseline's disfavour, not in its favour."
+  ]
+}

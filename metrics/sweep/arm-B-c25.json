@@ -1,0 +1,66 @@
+{
+  "model": "data/pretrain/eval_B_stock_appA",
+  "clock_normalization": 25.0,
+  "baselines": {
+    "random_mutations": {
+      "levenshtein_to_template": 23.18,
+      "kl_generated_vs_natural": 0.0036511746237527206,
+      "spectrum_mmd": 1.8188389153523126,
+      "entropy_delta": 0.08047787005833174
+    },
+    "random_homolog_pairing": {
+      "levenshtein_to_template": 22.4,
+      "kl_generated_vs_natural": 0.0010166489668727433,
+      "spectrum_mmd": 1.591846412189316,
+      "entropy_delta": 0.0
+    }
+  },
+  "n_templates": 10,
+  "n_variants_per_template": 10,
+  "n_generated": 100,
+  "n_natural_reference": 200,
+  "n_natural_aligned": 10,
+  "reference_construction": "single family, inference/holdout disjoint (paper's \u00a74.2)",
+  "alignment": "Needleman-Wunsch projection onto template coordinates (L=127)",
+  "defined_by_the_paper": {
+    "levenshtein_to_template": 2.23,
+    "pairwise_levenshtein": 4.282222222222222,
+    "covariance_frobenius_generated": 7.841068399140512,
+    "covariance_frobenius_natural": 8.330162063249428,
+    "interaction_strength_mean_generated": 0.020709812288787363,
+    "interaction_strength_mean_natural": 0.021573100383777896,
+    "mip_mean_generated": 9.639336400951414e-18,
+    "mip_mean_natural": 9.524039509250309e-18,
+    "kl_generated_vs_natural": 0.003762620847894911,
+    "spectrum_mmd": 1.6848071106212699
+  },
+  "esm2_pseudo_log_likelihood": {
+    "generated": {
+      "mean": -1.9179735469333827,
+      "sum_mean": -19.179735469333828,
+      "n": 100
+    },
+    "natural_holdout": {
+      "mean": -1.8670958308607806,
+      "sum_mean": -18.670958308607805,
+      "n": 200
+    },
+    "random_mutations": {
+      "mean": -1.942686671255622,
+      "sum_mean": -19.42686671255622,
+      "n": 100
+    },
+    "random_homolog_pairing": {
+      "mean": -1.8087180254328996,
+      "sum_mean": -18.087180254328995,
+      "n": 10
+    }
+  },
+  "our_interpretation": {
+    "entropy_delta": 0.07206460568734985,
+    "js_divergence": 0.0008435085568118043,
+    "profile_log_likelihood": -87.62987239510245
+  },
+  "not_implemented": [],
+  "caveats": []
+}

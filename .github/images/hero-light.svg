@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 372" width="680" height="372" role="img" aria-label="EditJumps: one sequence in, edited variants out">
+<title>EditJumps - fine-grained editing of protein sequences</title>
+<text x="340" y="72" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="46" font-weight="700" text-anchor="end" fill="#59636e">Edit</text>
+<text x="340" y="72" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="46" font-weight="700" text-anchor="start" fill="#1f2328">Jumps</text>
+<text x="340" y="102" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" fill="#59636e" text-anchor="middle">Fine-grained protein sequence editing with learned generative jump edits.</text>
+<line x1="60" y1="124" x2="620" y2="124" stroke="#d1d9e0" stroke-width="1"/>
+<rect x="110" y="168" width="44" height="44" rx="8" fill="#f6f8fa" fill-opacity="1" stroke="#d1d9e0" stroke-width="1"/>
+<text x="132" y="198" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="400" fill="#1f2328" text-anchor="middle">Q</text>
+<rect x="162" y="168" width="44" height="44" rx="8" fill="#f6f8fa" fill-opacity="1" stroke="#d1d9e0" stroke-width="1"/>
+<text x="184" y="198" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="400" fill="#1f2328" text-anchor="middle">V</text>
+<rect x="214" y="168" width="44" height="44" rx="8" fill="#f6f8fa" fill-opacity="1" stroke="#d1d9e0" stroke-width="1"/>
+<text x="236" y="198" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="400" fill="#1f2328" text-anchor="middle">Q</text>
+<rect x="266" y="168" width="44" height="44" rx="8" fill="#f6f8fa" fill-opacity="1" stroke="#d1d9e0" stroke-width="1"/>
+<text x="288" y="198" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="400" fill="#1f2328" text-anchor="middle">L</text>
+<rect x="318" y="168" width="44" height="44" rx="8" fill="none" stroke="#1a7f37" stroke-width="2" stroke-dasharray="4 4" stroke-opacity="0.5"/>
+<rect x="370" y="168" width="44" height="44" rx="8" fill="#f6f8fa" fill-opacity="1" stroke="#d1d9e0" stroke-width="1"/>
+<text x="392" y="198" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="400" fill="#1f2328" text-anchor="middle">V</text>
+<rect x="422" y="168" width="44" height="44" rx="8" fill="#8250df" fill-opacity="0.14" stroke="#8250df" stroke-width="2"/>
+<text x="444" y="198" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="600" fill="#8250df" text-anchor="middle">E</text>
+<rect x="474" y="168" width="44" height="44" rx="8" fill="#f6f8fa" fill-opacity="1" stroke="#d1d9e0" stroke-width="1"/>
+<text x="496" y="198" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="400" fill="#1f2328" text-anchor="middle">S</text>
+<rect x="526" y="168" width="44" height="44" rx="8" fill="#cf222e" fill-opacity="0.14" stroke="#cf222e" stroke-width="2"/>
+<text x="548" y="198" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="600" fill="#cf222e" text-anchor="middle">G</text>
+<line x1="534" y1="190" x2="562" y2="190" stroke="#cf222e" stroke-width="2.5"/>
+<rect x="110" y="278" width="44" height="44" rx="8" fill="#f6f8fa" fill-opacity="1" stroke="#d1d9e0" stroke-width="1"/>
+<text x="132" y="308" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="400" fill="#1f2328" text-anchor="middle">Q</text>
+<rect x="162" y="278" width="44" height="44" rx="8" fill="#f6f8fa" fill-opacity="1" stroke="#d1d9e0" stroke-width="1"/>
+<text x="184" y="308" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="400" fill="#1f2328" text-anchor="middle">V</text>
+<rect x="214" y="278" width="44" height="44" rx="8" fill="#f6f8fa" fill-opacity="1" stroke="#d1d9e0" stroke-width="1"/>
+<text x="236" y="308" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="400" fill="#1f2328" text-anchor="middle">Q</text>
+<rect x="266" y="278" width="44" height="44" rx="8" fill="#f6f8fa" fill-opacity="1" stroke="#d1d9e0" stroke-width="1"/>
+<text x="288" y="308" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="400" fill="#1f2328" text-anchor="middle">L</text>
+<rect x="318" y="278" width="44" height="44" rx="8" fill="#1a7f37" fill-opacity="0.14" stroke="#1a7f37" stroke-width="2"/>
+<text x="340" y="308" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="600" fill="#1a7f37" text-anchor="middle">Y</text>
+<rect x="370" y="278" width="44" height="44" rx="8" fill="#f6f8fa" fill-opacity="1" stroke="#d1d9e0" stroke-width="1"/>
+<text x="392" y="308" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="400" fill="#1f2328" text-anchor="middle">V</text>
+<rect x="422" y="278" width="44" height="44" rx="8" fill="#8250df" fill-opacity="0.14" stroke="#8250df" stroke-width="2"/>
+<text x="444" y="308" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="600" fill="#8250df" text-anchor="middle">Q</text>
+<rect x="474" y="278" width="44" height="44" rx="8" fill="#f6f8fa" fill-opacity="1" stroke="#d1d9e0" stroke-width="1"/>
+<text x="496" y="308" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace" font-size="20" font-weight="400" fill="#1f2328" text-anchor="middle">S</text>
+<rect x="526" y="278" width="44" height="44" rx="8" fill="none" stroke="#cf222e" stroke-width="2" stroke-dasharray="4 4" stroke-opacity="0.5"/>
+<text x="340" y="156" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e" text-anchor="middle">your sequence</text>
+<text x="340" y="346" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#59636e" text-anchor="middle">an edited variant</text>
+<path d="M 340 216 L 340 274" stroke="#1a7f37" stroke-width="2" stroke-dasharray="3 3" fill="none"/>
+<text x="350" y="248" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#1a7f37">insert</text>
+<path d="M 444 216 L 444 274" stroke="#8250df" stroke-width="2" stroke-dasharray="3 3" fill="none"/>
+<text x="454" y="248" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#8250df">substitute</text>
+<path d="M 548 216 L 548 274" stroke="#cf222e" stroke-width="2" stroke-dasharray="3 3" fill="none"/>
+<text x="558" y="248" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#cf222e">delete</text>
+</svg>

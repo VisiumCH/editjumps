@@ -1,0 +1,540 @@
+# The EvoFlows reproduction DAG: OAS corpus -> homolog pairs -> the edit-flow editor, plus the
+# Section 4.2 baselines it is scored against. Fourteen stages, all classified `reproduction` by
+# editjumps/core/provenance.py.
+#
+# NOTE ON LINEAGE: the numbers recorded under `metrics/` were produced from a corpus that had first
+# passed a `decontaminate_corpus` stage. That stage screened OAS against the labelled molecules of a
+# separate, property-prediction project; those labels are not part of this repository, so the stage
+# is not either and the DAG here splits the raw `oas_corpus.txt.gz` directly. The artefact it
+# removed was 370 lines of 2,587,297 (0.014%) — see docs/model_cards/datasets/oas-corpus.md, which
+# also explains why three different decontamination counts are in circulation. A fresh `dvc repro`
+# will therefore not reproduce the committed corpus md5s to the last digit, and this is the reason.
+stages:
+  download_oas:
+    cmd: uv run python -m editjumps.pipeline.preprocess.pretrain.download_oas
+      --output-folder data/pretrain
+      --collection ${oas.collection}
+      --min-len ${oas.min_len}
+      --max-len ${oas.max_len}
+      --pair-sep "${oas.pair_sep}"
+      $([ "${oas.pair_chains}" = "true" ] && echo --pair-chains)
+      $([ "${oas.emit_cdr_keys}" = "true" ] && echo --emit-cdr-keys)
+      $([ -n "${oas.max_units}" ] && [ "${oas.max_units}" != "None" ] && echo --max-units ${oas.max_units})
+    deps:
+      - editjumps/pipeline/preprocess/pretrain/download_oas.py
+    params:
+      - oas.collection
+      - oas.min_len
+      - oas.max_len
+      - oas.pair_chains
+      - oas.pair_sep
+      - oas.emit_cdr_keys
+      - oas.max_units
+    outs:
+      - data/pretrain/oas_corpus.txt.gz
+      - data/pretrain/oas_corpus.cdr_keys.tsv.gz
+      - data/pretrain/oas_units:
+          persist: true
+          cache: true
+
+  # Cluster the corpus and split it 95/5 so near-duplicates cannot straddle the split. Clustering
+  # is on the CDR-H3/L3 keys rather than on whole sequences: the frameworks are conserved, so
+  # whole-sequence identity would put nearly everything in one cluster.
+  split_corpus:
+    cmd: uv run python -m editjumps.pipeline.preprocess.pretrain.split_corpus
+      --output-folder data/pretrain
+      --corpus-name oas_corpus.txt.gz
+      --cdr-keys-name oas_corpus.cdr_keys.tsv.gz
+      --val-frac ${split.val_frac}
+      --min-seq-id ${split.min_seq_id}
+      --coverage ${split.coverage}
+      --mmseqs-mode ${split.mmseqs_mode}
+      --chain-handling ${chain_handling}
+      --split-memory-limit ${mmseqs.split_memory_limit}
+    deps:
+      - editjumps/pipeline/preprocess/pretrain/split_corpus.py
+      - editjumps/core/cluster_split.py
+      - data/pretrain/oas_corpus.txt.gz
+      - data/pretrain/oas_corpus.cdr_keys.tsv.gz
+    params:
+      - split.val_frac
+      - split.min_seq_id
+      - split.coverage
+      - split.mmseqs_mode
+      - chain_handling
+    outs:
+      - data/pretrain/oas_corpus.train.txt.gz
+      - data/pretrain/oas_corpus.val.txt.gz
+
+  # Base ESM-2 checkpoint, fetched via fair-esm and converted to HF format.
+  # This is a fallback path (see convert_esm_checkpoint.py) for when
+  # huggingface.co is unreachable but Meta's dl.fbaipublicfiles.com is - it
+  # downloads the identical trained weights and repackages them, verified to
+  # reproduce the original logits to float32 rounding precision. Kept as its
+  # own stage so `pretrain_esm` never needs direct HF Hub access.
+  fetch_base_checkpoint:
+    cmd: uv run python -m editjumps.pipeline.train.convert_esm_checkpoint
+      --loader-name ${pretrain.base_checkpoint_loader_name}
+      --output-folder ${pretrain.model_name}
+    deps:
+      - editjumps/pipeline/train/convert_esm_checkpoint.py
+    params:
+      - pretrain.base_checkpoint_loader_name
+      - pretrain.model_name
+    outs:
+      - ${pretrain.model_name}
+
+  # EvoFlows-style seed families: search a few seeds against the corpus by E-value, the shape the
+  # paper uses (§3.1, §4.2), instead of clustering the corpus all-against-all. Reports per-seed
+  # statistics in the columns of the paper's Table 2 - the only numbers of their data pipeline we
+  # can compare against.
+  seed_homologs:
+    cmd: uv run python -m editjumps.pipeline.preprocess.pretrain.seed_homologs
+      --seeds editjumps/pipeline/preprocess/pretrain/seeds/evoflows_seeds.fasta
+      --corpus data/pretrain/oas_corpus.txt.gz
+      --chain ${seed_homologs.chain}
+      --evalue ${seed_homologs.evalue}
+      --coverage ${seed_homologs.coverage}
+      --sensitivity ${seed_homologs.sensitivity}
+      --max-seqs ${seed_homologs.max_seqs}
+      --min-identity ${seed_homologs.min_identity}
+      --output-folder data/interim/seed_families
+      --metrics-path metrics/seed_homologs.json
+    deps:
+      - editjumps/pipeline/preprocess/pretrain/seed_homologs.py
+      - editjumps/pipeline/preprocess/pretrain/seeds/evoflows_seeds.fasta
+      - data/pretrain/oas_corpus.txt.gz
+    params:
+      - seed_homologs.chain
+      - seed_homologs.evalue
+      - seed_homologs.coverage
+      - seed_homologs.sensitivity
+      - seed_homologs.max_seqs
+      - seed_homologs.min_identity
+    outs:
+      - data/interim/seed_families
+    metrics:
+      - metrics/seed_homologs.json:
+          cache: false
+
+  # --- ESM-2 continue-pretraining on OAS -------------------------------------
+  pretrain_esm:
+    cmd: uv run python -m editjumps.pipeline.train.pretrain_esm
+      --corpus data/pretrain/oas_corpus.train.txt.gz
+      --val-corpus data/pretrain/oas_corpus.val.txt.gz
+      --output-folder data/pretrain
+      --model-name ${pretrain.model_name}
+      --epochs ${pretrain.epochs}
+      --max-steps ${pretrain.max_steps}
+      --batch-size ${pretrain.batch_size}
+      --max-length ${pretrain.max_length}
+      --max-seqs ${pretrain.max_seqs}
+      --mlm-probability ${pretrain.mlm_probability}
+      --save-steps ${pretrain.save_steps}
+      --save-total-limit ${pretrain.save_total_limit}
+      --precision ${pretrain.precision}
+      --dataloader-workers ${pretrain.dataloader_workers}
+      --metrics-path metrics/pretrain_esm.json
+    deps:
+      - editjumps/pipeline/train/pretrain_esm.py
+      - editjumps/core/utils.py
+      - data/pretrain/oas_corpus.train.txt.gz
+      - data/pretrain/oas_corpus.val.txt.gz
+      - ${pretrain.model_name}
+    params:
+      - pretrain.model_name
+      - pretrain.epochs
+      - pretrain.max_steps
+      - pretrain.batch_size
+      - pretrain.max_length
+      - pretrain.max_seqs
+      - pretrain.mlm_probability
+      - pretrain.save_steps
+      - pretrain.save_total_limit
+      - pretrain.precision
+      - pretrain.dataloader_workers
+    outs:
+      - data/pretrain/esm2_oas
+    metrics:
+      - metrics/pretrain_esm.json:
+          cache: false
+
+  # --- Edit Flows: homolog pairs -> editor -----------------------------------
+  # Unoriented pairs, which is EvoFlows' own coupling (eq 8 is symmetric by construction). The
+  # orientation alternative needs a property registry this repository does not carry, so
+  # `homolog_pairs.direction` has one accepted value and the stage tracks no property knobs.
+  build_homolog_pairs:
+    cmd: uv run python -m editjumps.pipeline.preprocess.pretrain.homolog_pairs
+      --output-folder data/pretrain
+      --min-seq-id ${homolog_pairs.min_seq_id}
+      --coverage ${homolog_pairs.coverage}
+      --mmseqs-mode ${homolog_pairs.mmseqs_mode}
+      --max-pairs-per-family ${homolog_pairs.max_pairs_per_family}
+      --max-lines ${homolog_pairs.max_lines}
+      --direction ${homolog_pairs.direction}
+      --split-memory-limit ${mmseqs.split_memory_limit}
+      --corpus-name oas_corpus.txt.gz
+      --cdr-keys-name oas_corpus.cdr_keys.tsv.gz
+    deps:
+      - editjumps/pipeline/preprocess/pretrain/homolog_pairs.py
+      - editjumps/core/cluster_split.py
+      - data/pretrain/oas_corpus.txt.gz
+      - data/pretrain/oas_corpus.cdr_keys.tsv.gz
+    params:
+      - homolog_pairs.min_seq_id
+      - homolog_pairs.coverage
+      - homolog_pairs.mmseqs_mode
+      - homolog_pairs.max_pairs_per_family
+      - homolog_pairs.max_lines
+      - homolog_pairs.direction
+    outs:
+      - data/pretrain/oas_homolog_pairs.tsv.gz
+
+  train_edit_flows:
+    cmd: uv run python -m editjumps.pipeline.train.train_edit_flows
+      --pairs data/pretrain/oas_homolog_pairs.tsv.gz
+      --model-name data/pretrain/esm2_oas
+      --output-folder data/pretrain/edit_flows
+      --max-steps ${edit_flows.max_steps}
+      --batch-size ${edit_flows.batch_size}
+      --lr ${edit_flows.lr}
+      --save-steps ${edit_flows.save_steps}
+      --val-frac ${edit_flows.val_frac}
+      --eval-steps ${edit_flows.eval_steps}
+      --val-pairs ${edit_flows.val_pairs}
+      --patience ${edit_flows.patience}
+      --min-delta ${edit_flows.min_delta}
+      --path ${edit_flows.path}
+      --schedule ${edit_flows.schedule}
+      --loss ${edit_flows.loss}
+      --chain ${edit_flows.chain}
+    deps:
+      - editjumps/pipeline/train/train_edit_flows.py
+      - editjumps/pipeline/train/evoflows.py
+      - editjumps/core/edit_flows/alignment.py
+      - editjumps/core/edit_flows/path.py
+      - editjumps/core/edit_flows/targets.py
+      - editjumps/core/edit_flows/loss.py
+      - editjumps/core/edit_flows/stages.py
+      - editjumps/core/edit_flows/inference.py
+      - data/pretrain/oas_homolog_pairs.tsv.gz
+      - data/pretrain/esm2_oas
+    params:
+      - edit_flows.path
+      - edit_flows.schedule
+      - edit_flows.loss
+      - edit_flows.max_steps
+      - edit_flows.batch_size
+      - edit_flows.lr
+      - edit_flows.save_steps
+      - edit_flows.val_frac
+      - edit_flows.eval_steps
+      - edit_flows.val_pairs
+      - edit_flows.patience
+      - edit_flows.min_delta
+      - edit_flows.rate_head
+      - edit_flows.q_head
+      # The training CONSTRUCT is part of the stage's identity, not a logging detail: heavy and
+      # joined are different-length inputs and produce different edit rates, so an untracked flip
+      # would leave a checkpoint trained on one construct passing as the other.
+      - edit_flows.chain
+    outs:
+      - data/pretrain/edit_flows
+
+  # EvoFlows §4.1's synthetic benchmark. It sits in this file rather than only in the SkyPilot
+  # launcher so the stage is classified in editjumps/core/provenance.py and its knobs cannot go
+  # stale — the same reason train_edit_flows is a stage even though hyperparameter runs bypass
+  # `dvc repro`.
+  build_deterministic_pairs:
+    cmd: uv run editjumps build-deterministic-pairs
+      --corpus data/pretrain/oas_corpus.train.txt.gz --output-folder data/pretrain
+      --n ${deterministic.n_sequences} --chain ${deterministic.chain}
+    deps:
+    - editjumps/pipeline/preprocess/pretrain/deterministic_pairs.py
+    - editjumps/core/edit_flows/deterministic.py
+    - data/pretrain/oas_corpus.train.txt.gz
+    params:
+    - deterministic.n_sequences
+    - deterministic.chain
+    outs:
+    - data/pretrain/deterministic_pairs.tsv.gz
+
+  train_deterministic_editor:
+    cmd: uv run --group train python -m editjumps.pipeline.train.train_edit_flows
+      --pairs data/pretrain/deterministic_pairs.tsv.gz --model-name data/pretrain/esm2_oas
+      --output-folder data/pretrain/edit_flows_deterministic
+      --max-steps ${deterministic.max_steps} --batch-size ${deterministic.batch_size}
+      --lr ${deterministic.lr} --save-steps ${deterministic.save_steps}
+      --path ${edit_flows.path} --schedule ${edit_flows.schedule} --loss ${edit_flows.loss}
+    deps:
+    - editjumps/pipeline/train/train_edit_flows.py
+    - editjumps/pipeline/train/evoflows.py
+    - editjumps/core/edit_flows/stages.py
+    - editjumps/core/edit_flows/inference.py
+    - editjumps/core/edit_flows/alignment.py
+    - editjumps/core/edit_flows/path.py
+    - editjumps/core/edit_flows/targets.py
+    - editjumps/core/edit_flows/loss.py
+    - data/pretrain/deterministic_pairs.tsv.gz
+    - data/pretrain/esm2_oas
+    params:
+    - deterministic.max_steps
+    - deterministic.batch_size
+    - deterministic.lr
+    - deterministic.save_steps
+    - edit_flows.path
+    - edit_flows.schedule
+    - edit_flows.loss
+    outs:
+    - data/pretrain/edit_flows_deterministic
+
+  deterministic_benchmark:
+    cmd: uv run --group train python -m editjumps.pipeline.evaluate.deterministic_benchmark
+      --model-folder data/pretrain/edit_flows_deterministic
+      --sequences data/pretrain/oas_corpus.val.txt.gz
+      --n ${deterministic.eval_n} --n-steps ${deterministic.eval_n_steps}
+      --clocks ${deterministic.clocks}
+      --provenance
+      --rate-head ${edit_flows.rate_head} --q-head ${edit_flows.q_head}
+      --metrics-path metrics/deterministic_benchmark.json
+    deps:
+    - editjumps/pipeline/evaluate/deterministic_benchmark.py
+    - editjumps/core/edit_flows/deterministic.py
+    - editjumps/core/edit_flows/alignment.py
+    - editjumps/core/edit_flows/path.py
+    - editjumps/core/edit_flows/targets.py
+    # the ⑤ stepper itself lives here now (evoflows.py is only the torch shell around it), so
+    # without this dep a change to the sampler would not rerun the benchmark
+    - editjumps/core/edit_flows/stages.py
+    - editjumps/core/edit_flows/inference.py
+    - editjumps/pipeline/train/evoflows.py
+    - data/pretrain/edit_flows_deterministic
+    - data/pretrain/oas_corpus.val.txt.gz
+    params:
+    - deterministic.eval_n
+    - deterministic.eval_n_steps
+    - deterministic.clocks
+    - edit_flows.rate_head
+    - edit_flows.q_head
+    metrics:
+    - metrics/deterministic_benchmark.json:
+        cache: false
+
+  # --- EvoFlows' two evotuned-PLM baselines (§2.2 tuning, §4.3 comparison) ---------------------
+  # Evotuning IS the corpus MLM pretrain with one homolog family in place of the corpus, so this
+  # stage is a wrapper over pretrain_esm rather than a second trainer. It trains on the family's
+  # TRAIN part only: `evotune.n_templates`, `evotune.holdout_size` and `evotune.seed` decide the
+  # §4.2 partition, and the two baseline stages below score against the HOLDOUT part of the SAME
+  # partition. Those three params are therefore shared, and evotune_baseline refuses to report a
+  # number if the intersection is non-empty.
+  evotune_esm:
+    cmd: uv run --group train python -m editjumps.pipeline.train.evotune
+      --family-fasta data/interim/seed_families/${evotune.family}
+      --output-folder data/pretrain
+      --corpus-stem evotune_family
+      --model-dir-name esm2_evotuned
+      --model-name ${evotune.model_name}
+      --epochs ${evotune.epochs}
+      --max-steps ${evotune.max_steps}
+      --batch-size ${evotune.batch_size}
+      --max-length ${evotune.max_length}
+      --mlm-probability ${evotune.mlm_probability}
+      --n-templates ${evotune.n_templates}
+      --holdout-size ${evotune.holdout_size}
+      --split-seed ${evotune.seed}
+      --seed ${evotune.seed}
+      --val-fraction ${evotune.val_fraction}
+      --save-steps ${evotune.save_steps}
+      --save-total-limit ${evotune.save_total_limit}
+      --precision ${evotune.precision}
+      --dataloader-workers ${evotune.dataloader_workers}
+      --metrics-path metrics/evotune_esm.json
+    deps:
+      - editjumps/pipeline/train/evotune.py
+      - editjumps/pipeline/train/pretrain_esm.py
+      - editjumps/core/family_split.py
+      - data/interim/seed_families
+      - ${evotune.model_name}
+    params:
+      - evotune.family
+      - evotune.model_name
+      - evotune.epochs
+      - evotune.max_steps
+      - evotune.batch_size
+      - evotune.max_length
+      - evotune.mlm_probability
+      - evotune.n_templates
+      - evotune.holdout_size
+      - evotune.seed
+      - evotune.val_fraction
+      - evotune.save_steps
+      - evotune.save_total_limit
+      - evotune.precision
+      - evotune.dataloader_workers
+    outs:
+      - data/pretrain/esm2_evotuned
+      - data/pretrain/evotune_family.train.txt.gz
+      - data/pretrain/evotune_family.val.txt.gz
+    metrics:
+      - metrics/evotune_esm.json:
+          cache: false
+
+  # "Evotuned PLM": the entropy profile of eq 12 picks the substitution positions, the evotuned MLM
+  # infills them with temperature scaling. It may put the original residue back, which is exactly
+  # the behaviour the forced variant below exists to remove -- so both stages exist, and the gap
+  # between their realised mutation counts is part of the result.
+  evotune_baseline:
+    cmd: uv run --group train python -m editjumps.pipeline.evaluate.evotune_baseline
+      --model-folder data/pretrain/esm2_evotuned
+      --family-fasta data/interim/seed_families/${evotune.family}
+      --train-corpus data/pretrain/evotune_family.train.txt.gz
+      --no-forced
+      --n-templates ${evotune.n_templates}
+      --n-variants ${evotune.n_variants}
+      --mutations ${evotune.mutations}
+      --temperature ${evotune.temperature}
+      --holdout-size ${evotune.holdout_size}
+      --profile-size ${evotune.profile_size}
+      --budget-mode ${evotune.budget_mode}
+      --max-rounds ${evotune.max_rounds}
+      --seed ${evotune.seed}
+      --k ${evotune.k}
+      --metrics-path metrics/evotune_baseline.json
+    deps:
+      - editjumps/pipeline/evaluate/evotune_baseline.py
+      - editjumps/core/evotune/profile.py
+      - editjumps/core/evotune/substitution.py
+      - editjumps/core/family_split.py
+      - editjumps/core/generation_metrics.py
+      - editjumps/core/generation_metrics_undefined.py
+      - editjumps/pipeline/evaluate/generation_eval.py
+      - data/pretrain/esm2_evotuned
+      - data/pretrain/evotune_family.train.txt.gz
+      - data/interim/seed_families
+    params:
+      - evotune.family
+      - evotune.n_templates
+      - evotune.n_variants
+      - evotune.mutations
+      - evotune.temperature
+      - evotune.holdout_size
+      - evotune.profile_size
+      - evotune.budget_mode
+      - evotune.max_rounds
+      - evotune.seed
+      - evotune.k
+    metrics:
+      - metrics/evotune_baseline.json:
+          cache: false
+
+  # "Evotuned PLM with forced substitutions": identical, except the original amino acid is blocked
+  # at every masked position, so the mutation budget is hit exactly rather than in expectation.
+  evotune_baseline_forced:
+    cmd: uv run --group train python -m editjumps.pipeline.evaluate.evotune_baseline
+      --model-folder data/pretrain/esm2_evotuned
+      --family-fasta data/interim/seed_families/${evotune.family}
+      --train-corpus data/pretrain/evotune_family.train.txt.gz
+      --forced
+      --n-templates ${evotune.n_templates}
+      --n-variants ${evotune.n_variants}
+      --mutations ${evotune.mutations}
+      --temperature ${evotune.temperature}
+      --holdout-size ${evotune.holdout_size}
+      --profile-size ${evotune.profile_size}
+      --budget-mode ${evotune.budget_mode}
+      --max-rounds ${evotune.max_rounds}
+      --seed ${evotune.seed}
+      --k ${evotune.k}
+      --metrics-path metrics/evotune_baseline_forced.json
+    deps:
+      - editjumps/pipeline/evaluate/evotune_baseline.py
+      - editjumps/core/evotune/profile.py
+      - editjumps/core/evotune/substitution.py
+      - editjumps/core/family_split.py
+      - editjumps/core/generation_metrics.py
+      - editjumps/core/generation_metrics_undefined.py
+      - editjumps/pipeline/evaluate/generation_eval.py
+      - data/pretrain/esm2_evotuned
+      - data/pretrain/evotune_family.train.txt.gz
+      - data/interim/seed_families
+    params:
+      - evotune.family
+      - evotune.n_templates
+      - evotune.n_variants
+      - evotune.mutations
+      - evotune.temperature
+      - evotune.holdout_size
+      - evotune.profile_size
+      - evotune.budget_mode
+      - evotune.max_rounds
+      - evotune.seed
+      - evotune.k
+    metrics:
+      - metrics/evotune_baseline_forced.json:
+          cache: false
+
+  # §4.2's fifth baseline: "EvoDiff-MSA (Alamdari et al., 2024)". Their released MSA diffusion model,
+  # run in its own environment because evodiff pins numpy<2 and cannot enter .venv - so this stage
+  # needs `bash editjumps/core/evodiff_msa/install_evodiff.sh` first, exactly as the MMseqs stages need install-mmseqs.
+  #
+  # The §4.2 partition params are evotune.* on purpose: this baseline, the two evotuned ones and the
+  # editor must all be scored against the SAME holdout at the SAME n or no set-level metric is
+  # comparable between them. evotune.mutations is shared for the same reason - §4.2 matches one
+  # expected mutation count across every method.
+  evodiff_msa_baseline:
+    cmd: uv run python -m editjumps.pipeline.evaluate.evodiff_msa_baseline
+      --family-fasta data/interim/seed_families/${evotune.family}
+      --mode ${evodiff.mode}
+      --model ${evodiff.model}
+      --n-templates ${evotune.n_templates}
+      --n-variants ${evotune.n_variants}
+      --mutations ${evotune.mutations}
+      --holdout-size ${evotune.holdout_size}
+      --msa-size ${evodiff.msa_size}
+      --n-sequences ${evodiff.n_sequences}
+      --selection-type "${evodiff.selection_type}"
+      --temperature ${evodiff.temperature}
+      --penalty-value ${evodiff.penalty_value}
+      --device ${evodiff.device}
+      --budget-mode ${evotune.budget_mode}
+      --max-rounds ${evotune.max_rounds}
+      --seed ${evotune.seed}
+      --k ${evotune.k}
+      --workdir data/interim/evodiff_msa
+      --metrics-path metrics/evodiff_msa_baseline.json
+    deps:
+      - editjumps/pipeline/evaluate/evodiff_msa_baseline.py
+      - editjumps/core/evodiff_msa/proposer.py
+      - editjumps/core/evodiff_msa/alignment.py
+      - editjumps/core/evodiff_msa/sampling.py
+      - editjumps/core/evotune/profile.py
+      - editjumps/core/evotune/substitution.py
+      - editjumps/core/family_split.py
+      - editjumps/core/generation_metrics.py
+      - editjumps/core/generation_metrics_undefined.py
+      - editjumps/pipeline/evaluate/evotune_baseline.py
+      - editjumps/pipeline/evaluate/generation_eval.py
+      - editjumps/core/evodiff_msa/evodiff_msa_runner.py
+      - data/interim/seed_families
+    params:
+      - evotune.family
+      - evotune.n_templates
+      - evotune.n_variants
+      - evotune.mutations
+      - evotune.holdout_size
+      - evotune.budget_mode
+      - evotune.max_rounds
+      - evotune.seed
+      - evotune.k
+      - evodiff.mode
+      - evodiff.model
+      - evodiff.msa_size
+      - evodiff.n_sequences
+      - evodiff.selection_type
+      - evodiff.temperature
+      - evodiff.penalty_value
+      - evodiff.device
+    metrics:
+      - metrics/evodiff_msa_baseline.json:
+          cache: false
+

@@ -1,0 +1,67 @@
+# Local pre-commit hooks that mirror the GitHub CI job (.github/workflows/ci.yml).
+#
+# One-time setup (per clone, on your own machine - not needed in CI):
+#     uv run pre-commit install                 # ruff + ty + structure run on `git commit`
+#     uv run pre-commit install --hook-type pre-push   # pytest runs on `git push`
+#
+# Run everything on demand without committing:
+#     uv run pre-commit run --all-files
+#
+# All hooks call the project's own tools through `uv run`, so they use the exact
+# versions in uv.lock - the same ones CI uses. ruff, ty and the ~1.5 s structural
+# suite are fast enough to run on every commit; the full pytest suite runs at push
+# time (stage: pre-push) to keep commits snappy while still gating what leaves your
+# machine.
+#
+# scripts/ci.sh runs ruff, ty and the FULL suite in one command - the single-command
+# equivalent if you'd rather not install the git hooks, and a superset of these four
+# hooks, so anything they catch it catches too.
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff check
+        entry: uv run ruff check
+        language: system
+        types: [python]
+        require_serial: true
+
+      - id: ty
+        name: ty check
+        # ty checks the whole project (cross-file type inference), so pass no
+        # per-file args - run once regardless of which files changed.
+        entry: uv run ty check .
+        language: system
+        types: [python]
+        pass_filenames: false
+        require_serial: true
+
+      # The structural suite only: repo invariants (links, anchors, Markdown tables, Makefile
+      # targets), the artefact checks, the deploy checks, the stage contracts, the DVC/params
+      # round-trip, and the appendix table's freshness -- six files, listed in `entry`. It is
+      # ~1.5 s because it reads files rather than importing torch, so it can run on every commit,
+      # and it is the suite that catches the damage a docs edit does -- a dead link, a table
+      # terminated mid-row, a tracked artefact left behind its generator. None of that shows up in
+      # a diff, and by push time the edit is no longer in front of you.
+      #
+      # The paths are listed rather than globbed so this hook cannot quietly widen into something
+      # slow. A new structural test file that is not listed here is caught by
+      # `test_the_fast_structural_hook_covers_every_repo_invariant_file`, and by the full suite
+      # below in any case -- this hook is an earlier warning, never the only gate.
+      - id: structure
+        name: structural checks (docs, artefacts, params)
+        entry: uv run pytest -q editjumps/test/test_repo_invariants.py
+          editjumps/test/test_repo_artefacts.py editjumps/test/test_repo_deploy.py
+          editjumps/test/test_repo_dvc_params.py editjumps/test/test_repo_stage_contracts.py
+          editjumps/test/pipeline/test_consolidate.py
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: pytest
+        name: pytest
+        entry: uv run pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

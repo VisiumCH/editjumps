@@ -1,0 +1,227 @@
+# Reproducibility job — regenerate the DVC outputs that were made by hand and never
+# committed/pushed (oas_homolog_pairs.tsv.gz + a STALE esm2_oas), by running the real
+# `dvc repro` on a GPU box and pushing the fresh, version-tracked cache to GCS. Sibling
+# of train.sky.yaml, but runs the pipeline stages (not an ad-hoc train) so dvc.lock
+# gets proper version info.
+#
+#   sky launch -c editjumps-repro deploy/gcp/repro.sky.yaml --retry-until-up --down
+#   sky logs editjumps-repro
+#   # re-run only one stage (e.g. after fixing something): --env STAGES=pretrain_esm
+#
+# After it finishes, the updated dvc.lock + params.yaml + metrics are copied to
+# gs://<dvc-bucket>/repro-artifacts/ so they can be pulled down and committed to git
+# (the pushed DVC cache lives in the same bucket under /dvc).
+#
+# The VM runs as skypilot-v1@<project>.iam.gserviceaccount.com (SkyPilot creates it) - NOT the
+# default compute SA, as this header used to claim. Check with:
+#   gcloud compute instances describe <sky vm> --format='value(serviceAccounts[].email)'
+# It needs roles/run.invoker on the MLflow service to log remotely (terraform invoker_members).
+name: editjumps-repro
+
+workdir: . # syncs the repo (data/** is gitignored -> pulled via DVC instead)
+
+resources:
+  cloud: gcp
+  accelerators: L4:1
+  disk_size: 100
+  # On-demand L4 in europe-west6 (Zurich) is prone to capacity stockouts, so give
+  # SkyPilot a list of EU regions to try in order rather than one hard preference.
+  # west6 stays first (co-located with the GCS bucket + MLflow Cloud Run); the rest
+  # are cross-region within the EU (the MLflow proxy and gs:// reads work from any of
+  # them - a little egress, no setup change). With --retry-until-up SkyPilot sweeps
+  # all zones of each before moving on.
+  any_of:
+    - region: europe-west6 # Zurich - co-located with the data + MLflow
+    - region: europe-west4 # Netherlands
+    - region: europe-west1 # Belgium
+    - region: europe-west3 # Frankfurt
+    - region: europe-west2 # London
+
+envs:
+  DVC_BUCKET: ""            # REQUIRED: your GCS bucket, e.g. gs://my-project-dvc
+                          # (deploy/gcp/config.env.example); not committed, so the
+                          # repo names no one's storage
+  STAGES: build_homolog_pairs pretrain_esm  # stages to repro (override to re-run a subset)
+  # Optional extra key on the GCS checkpoint prefix. Set it to start a run that must NOT resume
+  # from an earlier checkpoint of the same stage — e.g. after rebuilding that stage's
+  # inputs, where resuming would silently carry weights fit on the old data.
+  CKPT_SUFFIX: ""
+
+setup: |
+  set -e
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  source "$HOME/.local/bin/env"
+  uv sync --group train           # torch + transformers + dvc[gs]
+  bash editjumps/core/install_mmseqs.sh  # build_homolog_pairs clusters with MMseqs2
+  # EvoDiff cannot enter .venv (it pins numpy<2, which has no cp314 wheels), so it lives in
+  # Zenodo weights, so build it only when a stage that needs it was actually requested.
+  # Fail fast if THAT env's torch cannot reach the GPU. The check below covers .venv only, and
+  # .evodiff_env has its own interpreter and its own torch, so the CUDA-matched reinstall does not
+  # reach it -- sky job 71 spent 54 minutes without finishing 1 of 20 templates because torch
+  # 2.13.0+cu130 landed there and this VM's driver 535 (CUDA 12.2) cannot initialise it. The
+  # installer now passes --torch-backend=auto; this asserts the result, in setup, in one second.
+  case "$STAGES" in *evodiff*)
+    bash editjumps/core/evodiff_msa/install_evodiff.sh
+    .evodiff_env/bin/python -c "import torch,sys; ok=torch.cuda.is_available(); print('evodiff-env CUDA:', ok, '| torch', torch.__version__); sys.exit(0 if ok else 1)"
+    ;;
+  esac
+  # pyproject's torch>=2.12 resolves to the default (PyPI) +cu130 wheel, but the SkyPilot
+  # GCP VM ships an older NVIDIA driver (CUDA 12.2) that can't run cu130 ->
+  # torch.cuda.is_available()==False -> ~16s/step on CPU. Reinstall torch with the CUDA
+  # build that matches THIS VM's driver (uv --torch-backend auto-detects it via nvidia-smi).
+  # VM-specific on purpose: pyproject/uv.lock keep the default torch so the Mac dev env
+  # still gets its MPS/CPU wheels.
+  uv pip install "torch==2.12.1" --reinstall --torch-backend=auto
+  # Fail fast in (cheap) setup if torch still can't see the GPU, instead of silently
+  # falling back to CPU and burning GPU time on a bounded run.
+  uv run python -c "import torch,sys; ok=torch.cuda.is_available(); print('CUDA available:', ok, '| torch', torch.__version__); sys.exit(0 if ok else 1)"
+
+run: |
+  set -e   # surface any stage failure as a failed job (don't silently push a partial run)
+  source "$HOME/.local/bin/env"
+
+  # --no-sync for every `uv run` in this job, set once as an env var rather than repeated on each
+  # call. Load-bearing, not tidiness: without it `uv run` re-resolves the environment and reverts
+  # setup's CUDA-matched torch to the locked default cu130 wheel, which this VM's driver cannot run
+  # -> torch.cuda.is_available() False -> training silently runs on CPU. The revert happens AFTER
+  # setup's fail-fast check, so setup reports CUDA fine and the run is on CPU anyway.
+  #
+  # An env var rather than a flag on each command because the commands that matter are not in this
+  # file: `dvc repro` launches each stage's own `cmd:` from dvc.yaml, and those say plain
+  # `uv run --group train python -m ...`. Adding --no-sync there would change every stage's command
+  # string and so its dvc hash, invalidating the lock for stages whose behaviour did not change.
+  # UV_NO_SYNC reaches them without touching a single hash.
+  #
+  # Measured, twice. An L4 job ran 100 steps in 27 minutes on CPU (train.sky.yaml carries that note).
+  # Then sky job 58 ran `evotune_esm` for 23 hours on a rented A100 at 0% GPU utilisation, 0 MiB of
+  # 40960 used and 41 W of 400 drawn, reaching 825 of 45540 steps at 85 s/step -- a 44-day horizon,
+  # entirely on CPU, while setup had printed "CUDA available: True | torch 2.12.1+cu129" and the
+  # venv the trainer actually used held +cu130 with cuda avail False.
+  export UV_NO_SYNC=1
+
+  # Re-check CUDA in the RUN environment, with the exact invocation the stages use. Setup's check
+  # cannot catch a revert that happens after it, which is the whole failure above. Fail here, in
+  # seconds, instead of paying for an A100 to run on CPU for a day.
+  uv run python -c "import torch,sys; ok=torch.cuda.is_available(); print('run-env CUDA:', ok, '| torch', torch.__version__); sys.exit(0 if ok else 1)"
+
+
+  # SkyPilot strips .git from the workdir sync, but DVC's SCM layer refuses to open a repo
+  # that has .dvc/ without .git/ ("<dir> is not a git repository"). Re-init a throwaway git
+  # repo so dvc pull/repro work — no commits needed (dvc pull <targets> / repro -f -s don't
+  # read history), and it's recreated on every recovery VM.
+  git init -q && git config user.email repro@editjumps.local && git config user.name editjumps-repro
+
+  # Configure local DVC remote from DVC_BUCKET
+  if [ -z "$DVC_BUCKET" ]; then
+    echo "FATAL: DVC_BUCKET environment variable is not set." >&2
+    exit 1
+  fi
+  uv run dvc remote modify --local gcs url "$DVC_BUCKET/dvc"
+
+  # Pull this job's inputs, derived from the stage graph — NOT a hand-written list. The
+  # hand-written one drifted three times, each costing a full provision + setup before
+  # failing on a missing input. See editjumps/repo/stage_data_deps.py for why `dvc repro --pull`
+  # and `dvc pull --with-deps` are both the wrong tool here.
+  # Assign first, then pull. Inlining the $(...) would be a trap: if the resolver fails,
+  # the substitution is empty, `dvc pull` gets no targets and quietly pulls the ENTIRE
+  # remote (including the 3.5 GB oas_units) instead of erroring. As an assignment, the
+  # substitution's non-zero exit is the statement's exit, so `set -e` aborts the job.
+  DEPS="$(uv run python editjumps/repo/stage_data_deps.py $STAGES)"
+
+  # An EMPTY list is the other half of that trap, and it is not a failure. `fetch_base_checkpoint`
+  # and `download_oas` are source stages: they fetch from HuggingFace and OAS, so they have no
+  # DVC-tracked inputs and the resolver correctly returns nothing. Handing that to `dvc pull`
+  # pulled the whole remote, which then failed checkout on the outputs of stages that have never
+  # been recorded in dvc.lock -- so a job whose own stage needed no data at all died before
+  # starting. No targets means nothing to pull.
+  if [ -n "$DEPS" ]; then
+    echo "dvc pull: $DEPS"
+    uv run dvc pull -r gcs $DEPS
+    # Assert the inputs are HERE, not that the pull exited 0: `dvc pull` returns 0 having fetched
+    # nothing when a path is not in the remote. train.sky.yaml learned this the expensive way.
+    for required in $DEPS; do
+      if [ ! -e "$required" ]; then
+        echo "FATAL: $required is missing after the dvc pull (STAGES=$STAGES)." >&2
+        echo "       Either it is not in the remote, or the stage graph disagrees with it." >&2
+        exit 1
+      fi
+    done
+  else
+    echo "dvc pull: nothing to pull - $STAGES has no DVC-tracked inputs (source stage)"
+  fi
+
+  # MLflow logging to the private Cloud Run server, with the fallback reporting facts rather than
+  # theories. History worth keeping, because two wrong assumptions cost weeks of silently-lost runs:
+  #   * The old fallback message asserted "the compute SA lacks run.invoker". The compute SA HAS
+  #     run.invoker - but the VMs do not run as it. They run as skypilot-v1@…, which had no grant,
+  #     so every GPU run got 403 and fell back to a sqlite file that died with the cluster. Fixed by
+  #     adding skypilot-v1 to terraform's invoker_members; verified from the VM itself, where the
+  #     metadata token now returns HTTP 200 against /health and the experiments API.
+  #   * `gcloud run services proxy` also needs a component this VM's gcloud will not install, which
+  #     is why this probes with a metadata identity token instead of proxying.
+  # The probe prints the URL, whether a token was minted, and the HTTP status, and asserts nothing
+  # it did not measure - a fallback that names a cause it has not checked is worse than one that
+  # just reports the code.
+  # Read the URL from params.yaml, which already declares it (= `terraform output mlflow_url`).
+  # It used to come from `gcloud run services describe`, which works on a SkyPilot VM only because
+  # SkyPilot forwards the *user's* gcloud credentials: the VM's own SA (skypilot-v1) lacks
+  # run.services.get. So the URL came from one identity and the bearer token from another - and if
+  # credential forwarding ever changes, the URL goes empty and every run silently falls back to a
+  # sqlite file that dies with the cluster. params.yaml needs no credentials at all.
+  MLFLOW_URL="$(uv run python -c "import yaml;print(yaml.safe_load(open('params.yaml'))['mlflow']['tracking_uri'])" 2>/tmp/mlflow_url.err)"
+  if [ -z "$MLFLOW_URL" ]; then
+    echo "MLflow probe: params.yaml gave no mlflow.tracking_uri; falling back to gcloud"; cat /tmp/mlflow_url.err || true
+    MLFLOW_URL="$(gcloud run services describe profound-mlflow --region europe-west6 --format='value(status.url)' 2>/dev/null)"
+  fi
+  TOKEN="$(curl -s -H 'Metadata-Flavor: Google' \
+    "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience=$MLFLOW_URL" || true)"
+  MLFLOW_HTTP=000
+  if [ -n "$MLFLOW_URL" ] && [ -n "$TOKEN" ]; then
+    MLFLOW_HTTP="$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $TOKEN" "$MLFLOW_URL/health" || echo 000)"
+  fi
+  echo "MLflow probe: url=${MLFLOW_URL:-<empty>} token_bytes=${#TOKEN} health_http=$MLFLOW_HTTP"
+  if [ "$MLFLOW_HTTP" = "200" ]; then
+    export MLFLOW_TRACKING_URI="$MLFLOW_URL"
+    export MLFLOW_TRACKING_TOKEN="$TOKEN"
+    echo "MLflow -> remote $MLFLOW_URL"
+  else
+    export MLFLOW_TRACKING_URI="sqlite:///$(pwd)/mlflow.db"  # mlflow>=3 dropped the file:// store
+    echo "MLflow -> local $MLFLOW_TRACKING_URI (remote probe returned $MLFLOW_HTTP; metrics are"
+    echo "  copied to \$DVC_BUCKET/repro-artifacts/ at the end so they are not lost with the cluster)"
+  fi
+
+  # Periodic checkpoints to GCS + resume-from-latest. Driven by `dvc repro` (not a direct CLI
+  # call), so enable it via the EDITJUMPS_CHECKPOINT_URI env override the CLI reads (mirrors the
+  # MLFLOW_TRACKING_URI idiom above) instead of editing the committed params.yaml. "" in
+  # params.yaml keeps it off everywhere else.
+  #
+  # The prefix is keyed by the stage set, because "resume from the latest
+  # checkpoint" is only correct when the run being resumed had the SAME inputs. One flat prefix
+  # was actively dangerous: it accumulated pretrain_esm's `checkpoint-<N>/` dirs next to
+  # train_edit_flows' `checkpoint.pt`, so re-running the editor after rebuilding the homolog
+  # pairs silently resumed weights fit on the OLD pairs instead of starting from the esm2_oas
+  # trunk — a wrong model that trains and logs perfectly happily. Different names meant no
+  # crash, which is exactly why it would have gone unnoticed.
+  # Caveat this does NOT cover: same stage, but rebuilt inputs. Bump CKPT_SUFFIX (or clear the
+  # prefix) when the inputs change under a run you do not want to resume.
+  # The prefix used to carry the active target property too; this repository has none, and reading
+  # a `property:` key that params.yaml no longer defines aborted the whole job under `set -e`.
+  STAGE_SLUG="$(echo "$STAGES" | tr ' /' '--')"
+  export EDITJUMPS_CHECKPOINT_URI="$DVC_BUCKET/checkpoints/profound-repro/$STAGE_SLUG${CKPT_SUFFIX:+-$CKPT_SUFFIX}"
+  echo "checkpoints -> $EDITJUMPS_CHECKPOINT_URI"
+
+  # Single-item, forced repro of the stale downstream stage(s), against the pulled
+  # upstream (-s so the drifted upstream lock entries are left untouched). pretrain_esm
+  # is bounded via params.yaml (max_steps/max_seqs) and logs to MLflow.
+  uv run dvc repro -f -s $STAGES
+
+  uv run dvc push -r gcs   # push the fresh cache (oas_homolog_pairs / esm2_oas) to GCS
+
+  # Ship the updated lock/params/metrics back for committing to git; preserve the local
+  # MLflow run (params/metrics/model) when logging fell back to the file store.
+  # Every metrics/*.json, not a named list: metrics declared `cache: false` are NOT carried by
+  # `dvc push`, so a hardcoded name silently loses whichever stage's numbers were not anticipated
+  # here.
+  gcloud storage cp dvc.lock params.yaml "$DVC_BUCKET/repro-artifacts/"
+  gcloud storage cp metrics/*.json "$DVC_BUCKET/repro-artifacts/" || true
+  [ -f mlflow.db ] && gcloud storage cp mlflow.db "$DVC_BUCKET/repro-artifacts/" || true

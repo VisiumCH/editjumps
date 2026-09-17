@@ -1,0 +1,56 @@
+{
+  "frame": {
+    "family_fasta": "<scratch>/arms/her2vh_joined.fasta",
+    "fasta": "<scratch>/joined_test/joined.fasta",
+    "truncated_at_separator": false,
+    "alignment_length": 226,
+    "reference_template_length": 226,
+    "n_generated": 400,
+    "n_natural_reference": 200,
+    "agreement_reference_n": 200,
+    "ceiling_n": 300,
+    "separators_per_generation": {
+      "1": 400
+    }
+  },
+  "defined_by_the_paper": {
+    "levenshtein_to_template": 6.435,
+    "levenshtein_to_template_per_template": [
+      8.05,
+      5.8,
+      6.65,
+      7.25,
+      6.8,
+      6.05,
+      7.05,
+      7.2,
+      6.6,
+      6.55,
+      6.25,
+      6.9,
+      7.2,
+      6.25,
+      5.2,
+      5.75,
+      7.0,
+      5.55,
+      5.85,
+      4.75
+    ],
+    "pairwise_levenshtein": 12.031052631578948,
+    "pairwise_levenshtein_pooled": 31.5995,
+    "covariance_agreement": 0.9076886823462511,
+    "mip_agreement": 0.7358393385959258,
+    "covariance_agreement_ceiling": 0.9763100460086068,
+    "mip_agreement_ceiling": 0.9289376957726044,
+    "kl_generated_vs_natural": 0.0004424642998722564,
+    "spectrum_mmd": 2.037907934623163
+  },
+  "our_interpretation": {
+    "entropy_delta": 0.11361311352057707,
+    "js_divergence": 0.00011033410909186791,
+    "js_divergence_positional": 0.011635928960824389,
+    "kl_divergence_positional": 0.09409467498900995,
+    "profile_log_likelihood": -85.89792324300886
+  }
+}

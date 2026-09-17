@@ -1,0 +1,134 @@
+{
+  "model": "data/pretrain/edit_flows_baseline",
+  "clock_normalization": 40.0,
+  "baselines": {
+    "random_mutations": {
+      "levenshtein_to_template": 3.8866666666666667,
+      "kl_generated_vs_natural": 0.0014264141707560996,
+      "spectrum_mmd": 1.2792743168600613,
+      "entropy_delta": 0.13818325539813126
+    },
+    "random_homolog_pairing": {
+      "levenshtein_to_template": 23.616666666666667,
+      "kl_generated_vs_natural": 7.193381142529058e-05,
+      "spectrum_mmd": 0.39093975097052036,
+      "entropy_delta": 0.09733701649802762
+    }
+  },
+  "n_templates": 30,
+  "n_variants_per_template": 10,
+  "n_generated": 300,
+  "n_natural_reference": 1000,
+  "n_natural_aligned": 30,
+  "reference_construction": "single family, inference/holdout disjoint (paper's \u00a74.2)",
+  "alignment": "Needleman-Wunsch projection onto template coordinates (L=120)",
+  "defined_by_the_paper": {
+    "levenshtein_to_template": 4.1466666666666665,
+    "pairwise_levenshtein": 7.544444444444445,
+    "covariance_frobenius_generated": 5.083623822131049,
+    "covariance_frobenius_natural": 5.2902173868377105,
+    "interaction_strength_mean_generated": 0.013174583962160707,
+    "interaction_strength_mean_natural": 0.01286389662812885,
+    "mip_mean_generated": -1.8190503116145686e-18,
+    "mip_mean_natural": -2.325011325441137e-19,
+    "kl_generated_vs_natural": 0.0007200205905655282,
+    "spectrum_mmd": 0.9646349338250064
+  },
+  "mmd_diagnostic": {
+    "spectrum_mmd_unbiased_squared": 0.7372795375978001,
+    "n_generated": 300,
+    "n_reference": 1000,
+    "comparable_only_at_equal_n": true
+  },
+  "diversity_novelty": {
+    "model": {
+      "diversity": 24.6875,
+      "novelty": 7.6,
+      "novelty_templates": 5.633333333333334,
+      "novelty_delta": 1.966666666666666,
+      "novelty_detail": {
+        "mean": 7.6,
+        "median": 7.0,
+        "min_of_means": 2.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 5.633333333333334,
+        "median": 4.5,
+        "min_of_means": 1.0,
+        "n_queries": 30,
+        "n_reference": 20000
+      }
+    },
+    "random_mutations": {
+      "diversity": 29.213,
+      "novelty": 9.236666666666666,
+      "novelty_templates": 5.633333333333334,
+      "novelty_delta": 3.6033333333333326,
+      "novelty_detail": {
+        "mean": 9.236666666666666,
+        "median": 8.0,
+        "min_of_means": 4.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 5.633333333333334,
+        "median": 4.5,
+        "min_of_means": 1.0,
+        "n_queries": 30,
+        "n_reference": 20000
+      }
+    },
+    "random_homolog_pairing": {
+      "diversity": 23.9,
+      "novelty": 3.4366666666666665,
+      "novelty_templates": 5.633333333333334,
+      "novelty_delta": -2.196666666666667,
+      "novelty_detail": {
+        "mean": 3.4366666666666665,
+        "median": 0.0,
+        "min_of_means": 0.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 5.633333333333334,
+        "median": 4.5,
+        "min_of_means": 1.0,
+        "n_queries": 30,
+        "n_reference": 20000
+      }
+    }
+  },
+  "esm2_pseudo_log_likelihood": {
+    "generated": {
+      "mean": -1.8975208116875342,
+      "sum_mean": -18.97520811687534,
+      "n": 300
+    },
+    "natural_holdout": {
+      "mean": -1.8644210273829753,
+      "sum_mean": -18.644210273829753,
+      "n": 1000
+    },
+    "random_mutations": {
+      "mean": -2.042937955281697,
+      "sum_mean": -20.42937955281697,
+      "n": 300
+    },
+    "random_homolog_pairing": {
+      "mean": -1.8721147788668362,
+      "sum_mean": -18.72114778866836,
+      "n": 300
+    }
+  },
+  "our_interpretation": {
+    "entropy_delta": 0.07187942185321816,
+    "js_divergence": 0.00017609891255427186,
+    "profile_log_likelihood": -67.69360983180036
+  },
+  "not_implemented": [],
+  "caveats": []
+}

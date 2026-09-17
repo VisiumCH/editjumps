@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Contributing guide
+    url: https://anonymous.4open.science/r/editjumps-BA56/CONTRIBUTING.md
+    about: Environment setup, the checks that gate a PR, and how to add a pipeline stage.
+  - name: Installation and environment troubleshooting
+    url: https://anonymous.4open.science/r/editjumps-BA56/docs/installation.md
+    about: Dependency groups, the native binaries pip cannot install, and the isolated third-party environments.
+  - name: Known issues
+    url: https://anonymous.4open.science/r/editjumps-BA56/docs/known_issues.md
+    about: Check here before filing - the failure may already be documented.

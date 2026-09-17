@@ -1,0 +1,115 @@
+{
+  "model": "data/pretrain/eval_C_oas_appA",
+  "clock_normalization": 40.0,
+  "baselines": {
+    "random_mutations": {
+      "levenshtein_to_template": 3.88,
+      "kl_generated_vs_natural": 0.00025870890420251144,
+      "spectrum_mmd": 0.8663882245018978,
+      "entropy_delta": 0.1135648341358706
+    },
+    "random_homolog_pairing": {
+      "levenshtein_to_template": 22.826666666666668,
+      "kl_generated_vs_natural": 4.678771041867158e-05,
+      "spectrum_mmd": 0.34101107834723193,
+      "entropy_delta": -0.0028547212620313456
+    }
+  },
+  "n_templates": 300,
+  "n_variants_per_template": 1,
+  "n_generated": 300,
+  "n_natural_reference": 1000,
+  "n_natural_aligned": 300,
+  "reference_construction": "single family, inference/holdout disjoint (paper's \u00a74.2)",
+  "alignment": "Needleman-Wunsch projection onto template coordinates (L=122)",
+  "defined_by_the_paper": {
+    "levenshtein_to_template": 4.28,
+    "pairwise_levenshtein": 0.0,
+    "covariance_frobenius_generated": 3.7208998314326593,
+    "covariance_frobenius_natural": 4.353819912458884,
+    "interaction_strength_mean_generated": 0.011074327250841431,
+    "interaction_strength_mean_natural": 0.011491562655163014,
+    "mip_mean_generated": -6.69460605080004e-18,
+    "mip_mean_natural": -2.5163047464619232e-18,
+    "kl_generated_vs_natural": 7.300045452964435e-05,
+    "spectrum_mmd": 0.5306910589033881
+  },
+  "mmd_diagnostic": {
+    "spectrum_mmd_unbiased_squared": 0.10180765313808138,
+    "n_generated": 300,
+    "n_reference": 1000,
+    "comparable_only_at_equal_n": true
+  },
+  "diversity_novelty": {
+    "model": {
+      "diversity": 23.22,
+      "novelty": 8.82,
+      "novelty_templates": 7.503333333333333,
+      "novelty_delta": 1.3166666666666673,
+      "novelty_detail": {
+        "mean": 8.82,
+        "median": 7.0,
+        "min_of_means": 1.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 7.503333333333333,
+        "median": 6.0,
+        "min_of_means": 0.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      }
+    },
+    "random_mutations": {
+      "diversity": 28.6805,
+      "novelty": 11.056666666666667,
+      "novelty_templates": 7.503333333333333,
+      "novelty_delta": 3.5533333333333337,
+      "novelty_detail": {
+        "mean": 11.056666666666667,
+        "median": 9.0,
+        "min_of_means": 4.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 7.503333333333333,
+        "median": 6.0,
+        "min_of_means": 0.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      }
+    },
+    "random_homolog_pairing": {
+      "diversity": 23.002,
+      "novelty": 3.9366666666666665,
+      "novelty_templates": 7.503333333333333,
+      "novelty_delta": -3.5666666666666664,
+      "novelty_detail": {
+        "mean": 3.9366666666666665,
+        "median": 2.5,
+        "min_of_means": 0.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      },
+      "novelty_templates_detail": {
+        "mean": 7.503333333333333,
+        "median": 6.0,
+        "min_of_means": 0.0,
+        "n_queries": 300,
+        "n_reference": 20000
+      }
+    }
+  },
+  "esm2_pseudo_log_likelihood": {},
+  "our_interpretation": {
+    "entropy_delta": 0.02008694699007485,
+    "js_divergence": 1.824396006201179e-05,
+    "profile_log_likelihood": -63.40964674359025
+  },
+  "not_implemented": [
+    "esm2_pseudo_log_likelihood (B.2) - pass --pll-model"
+  ],
+  "caveats": []
+}

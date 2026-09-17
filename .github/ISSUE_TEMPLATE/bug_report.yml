@@ -1,0 +1,66 @@
+name: Bug report
+description: Something in the pipeline, the CLI or the library does not behave as documented.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: `make ci` runs the same three checks CI does (ruff, ty, pytest).
+        If it fails on a clean checkout, that output is the most useful thing you can paste here.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what you got instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: The exact command, and any config or input needed to hit it.
+      placeholder: |
+        uv run editjumps <subcommand> --flag ...
+        # or: make <target> VAR=...
+        # or: dvc repro <stage>
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output
+      description: The full traceback or stage log. Trim credentials and absolute paths you would rather not publish.
+      render: shell
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        Please paste the output of:
+        `uv --version && uv run python -V && git rev-parse --short HEAD && uname -sm`
+        Also say which dependency groups are installed (`uv sync`, `--dev`, `--all-groups`) and,
+        for a pipeline stage, whether the external binaries it needs are present (`hmmscan`, MMseqs2).
+      render: shell
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part
+      options:
+        - Corpus, pairs or seed families (preprocess stages)
+        - Training or generation (edit flows)
+        - Evaluation and metrics
+        - CLI, packaging or environment
+        - Docs
+        - Not sure
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I am on the latest `main`, or I have said which commit I am on above.
+        - label: This is reproducible from a clean environment, or I have said why it is not.

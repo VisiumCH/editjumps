@@ -1,0 +1,333 @@
+method,family,metric,value,ci_low,ci_high,ci_kind,scope,frame,alignment_length,reference_n,n_generated,n_reference,n_templates,recomputed,source_file
+our EvoFlows port,ty1,edits_per_sequence,4.58,3.7325000000000004,5.505,mean_over_templates,cross_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+our EvoFlows port,ty1,pairwise_pooled,24.471,,,,cross_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+our EvoFlows port,ty1,spectrum_mmd,0.9839493127188985,,,,cross_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+our EvoFlows port,ty1,kl_composition_pooled,0.0005027783198212701,,,,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+our EvoFlows port,ty1,kl_positional,0.07131588519880379,,,,cross_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+our EvoFlows port,ty1,covariance_agreement,0.9118676208523727,0.7390524555901693,0.8934290323193403,template_resample_spread,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+our EvoFlows port,ty1,covariance_ceiling,0.9533611396375945,,,,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+our EvoFlows port,ty1,mip_agreement,0.8267047022284507,0.5819527383051233,0.8055297695036329,template_resample_spread,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+our EvoFlows port,ty1,mip_ceiling,0.9316800071756081,,,,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+our EvoFlows port,ty1,js_positional,0.012578391625686178,,,,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+our EvoFlows port,ty1,entropy_delta,0.06753928525302488,,,,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+our EvoFlows port,ty1,profile_log_likelihood,-64.00880861735737,,,,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+our EvoFlows port,her2vh,edits_per_sequence,4.0825,3.5575,4.775,mean_over_templates,cross_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+our EvoFlows port,her2vh,pairwise_pooled,24.7315,,,,cross_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+our EvoFlows port,her2vh,spectrum_mmd,1.0209554348746215,,,,cross_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+our EvoFlows port,her2vh,kl_composition_pooled,0.0006257719700752691,,,,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+our EvoFlows port,her2vh,kl_positional,0.0524225956910202,,,,cross_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+our EvoFlows port,her2vh,covariance_agreement,0.9344764730964324,0.7207997761716116,0.9180017386314514,template_resample_spread,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+our EvoFlows port,her2vh,covariance_ceiling,0.9746792290147925,,,,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+our EvoFlows port,her2vh,mip_agreement,0.8659005489593262,0.6293083356535407,0.8544853399981958,template_resample_spread,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+our EvoFlows port,her2vh,mip_ceiling,0.9282877914042152,,,,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+our EvoFlows port,her2vh,js_positional,0.010258354192932058,,,,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+our EvoFlows port,her2vh,entropy_delta,0.08332987065812747,,,,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+our EvoFlows port,her2vh,profile_log_likelihood,-59.02911929677546,,,,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random mutations,ty1,edits_per_sequence,4.81,4.76,4.8575,mean_over_templates,cross_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random mutations,ty1,pairwise_pooled,30.0145,,,,cross_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random mutations,ty1,spectrum_mmd,1.4054091930822166,,,,cross_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random mutations,ty1,kl_composition_pooled,0.0007678079708339676,,,,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random mutations,ty1,kl_positional,0.1628971810318648,,,,cross_study,disjoint,119,200,400,200,20,True,metrics/disjoint/editor-ty1.json
+random mutations,ty1,covariance_agreement,0.8482986354010351,0.6476038635996817,0.8333371250188688,template_resample_spread,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random mutations,ty1,mip_agreement,0.6616755269807338,0.36848009619959077,0.6547257702471676,template_resample_spread,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random mutations,ty1,js_positional,0.022344214352140804,,,,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random mutations,ty1,entropy_delta,0.15207917732108234,,,,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random mutations,her2vh,edits_per_sequence,3.8875,3.8549999999999995,3.9175000000000004,mean_over_templates,cross_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random mutations,her2vh,pairwise_pooled,29.076,,,,cross_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random mutations,her2vh,spectrum_mmd,1.376787474521748,,,,cross_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random mutations,her2vh,kl_composition_pooled,0.0007902706159202486,,,,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random mutations,her2vh,kl_positional,0.12493574189397115,,,,cross_study,disjoint,118,200,400,200,20,True,metrics/disjoint/editor-her2vh.json
+random mutations,her2vh,covariance_agreement,0.9032980495291809,0.6273791169412501,0.8911568137633212,template_resample_spread,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random mutations,her2vh,mip_agreement,0.7782691154523801,0.47616754876909934,0.7864939556399042,template_resample_spread,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random mutations,her2vh,js_positional,0.01889854595480308,,,,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random mutations,her2vh,entropy_delta,0.14551400849852208,,,,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random pairing,ty1,edits_per_sequence,23.38,22.095,24.68,mean_over_templates,cross_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random pairing,ty1,pairwise_pooled,23.5305,,,,cross_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random pairing,ty1,spectrum_mmd,0.5966311674728267,,,,cross_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random pairing,ty1,kl_composition_pooled,0.0001365251612155111,,,,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random pairing,ty1,kl_positional,0.029132893924055686,,,,cross_study,disjoint,119,200,400,200,20,True,metrics/disjoint/editor-ty1.json
+random pairing,ty1,covariance_agreement,0.9750779269388,0.9629950002516848,0.977345714381434,template_resample_spread,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random pairing,ty1,mip_agreement,0.9422109348699391,0.9157383208353042,0.9404476789983495,template_resample_spread,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random pairing,ty1,js_positional,0.005432426973185764,,,,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random pairing,ty1,entropy_delta,0.06917006732848296,,,,within_study,disjoint,119,200,400,200,20,False,metrics/disjoint/editor-ty1.json
+random pairing,her2vh,edits_per_sequence,23.25,21.494999999999997,24.975,mean_over_templates,cross_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random pairing,her2vh,pairwise_pooled,23.0215,,,,cross_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random pairing,her2vh,spectrum_mmd,0.4729957716512926,,,,cross_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random pairing,her2vh,kl_composition_pooled,9.590851756177361e-05,,,,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random pairing,her2vh,kl_positional,0.025246649943305503,,,,cross_study,disjoint,118,200,400,200,20,True,metrics/disjoint/editor-her2vh.json
+random pairing,her2vh,covariance_agreement,0.9843888008823785,0.9689056046512051,0.9853748461152668,template_resample_spread,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random pairing,her2vh,mip_agreement,0.9447648926637505,0.9075659817970669,0.9408732197245362,template_resample_spread,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random pairing,her2vh,js_positional,0.004723772028376664,,,,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+random pairing,her2vh,entropy_delta,0.09898040217123122,,,,within_study,disjoint,118,200,400,200,20,False,metrics/disjoint/editor-her2vh.json
+EvoDiff-MSA,ty1,edits_per_sequence,2.955,2.665,3.2525,mean_over_templates,cross_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-ty1.json
+EvoDiff-MSA,ty1,pairwise_pooled,22.849,,,,cross_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-ty1.json
+EvoDiff-MSA,ty1,spectrum_mmd,0.9722461108176327,,,,cross_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-ty1.json
+EvoDiff-MSA,ty1,kl_composition_pooled,0.0006069762828862277,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-ty1.json
+EvoDiff-MSA,ty1,kl_positional,0.07097406579085475,,,,cross_study,disjoint,119,200.0,400,200,20,True,metrics/disjoint/evodiff-msa-ty1.json
+EvoDiff-MSA,ty1,covariance_agreement,0.8918648144072059,0.7074647853901442,0.8769599531584646,template_resample_spread,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-ty1.json
+EvoDiff-MSA,ty1,covariance_ceiling,0.9533611396375945,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-ty1.json
+EvoDiff-MSA,ty1,mip_agreement,0.7793050210501478,0.5375674548296612,0.7697907032352705,template_resample_spread,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-ty1.json
+EvoDiff-MSA,ty1,mip_ceiling,0.9316800071756081,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-ty1.json
+EvoDiff-MSA,ty1,js_positional,0.013807478914051674,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-ty1.json
+EvoDiff-MSA,ty1,entropy_delta,0.021868276629482042,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-ty1.json
+EvoDiff-MSA,ty1,profile_log_likelihood,-59.15480105711624,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-ty1.json
+EvoDiff-MSA,her2vh,edits_per_sequence,2.6075,2.42,2.805,mean_over_templates,cross_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-her2vh.json
+EvoDiff-MSA,her2vh,pairwise_pooled,23.226,,,,cross_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-her2vh.json
+EvoDiff-MSA,her2vh,spectrum_mmd,1.1063057895536892,,,,cross_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-her2vh.json
+EvoDiff-MSA,her2vh,kl_composition_pooled,0.00041965053816306965,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-her2vh.json
+EvoDiff-MSA,her2vh,kl_positional,0.055429886238810046,,,,cross_study,disjoint,118,200.0,400,200,20,True,metrics/disjoint/evodiff-msa-her2vh.json
+EvoDiff-MSA,her2vh,covariance_agreement,0.914838921933321,0.6717792917576217,0.9055696394195022,template_resample_spread,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-her2vh.json
+EvoDiff-MSA,her2vh,covariance_ceiling,0.9746792290147925,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-her2vh.json
+EvoDiff-MSA,her2vh,mip_agreement,0.8221127646600117,0.5675869691322014,0.8365251367730029,template_resample_spread,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-her2vh.json
+EvoDiff-MSA,her2vh,mip_ceiling,0.9282877914042152,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-her2vh.json
+EvoDiff-MSA,her2vh,js_positional,0.01178619199961288,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-her2vh.json
+EvoDiff-MSA,her2vh,entropy_delta,0.04450749501102175,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-her2vh.json
+EvoDiff-MSA,her2vh,profile_log_likelihood,-55.029464097141734,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evodiff-msa-her2vh.json
+Evotuning,ty1,edits_per_sequence,4.472499999999999,4.2375,4.6775,mean_over_templates,cross_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-ty1.json
+Evotuning,ty1,pairwise_pooled,22.6145,,,,cross_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-ty1.json
+Evotuning,ty1,spectrum_mmd,0.9762107866644407,,,,cross_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-ty1.json
+Evotuning,ty1,kl_composition_pooled,0.0005402867196221626,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-ty1.json
+Evotuning,ty1,kl_positional,0.05887199189340205,,,,cross_study,disjoint,119,200.0,400,200,20,True,metrics/disjoint/evotune-ty1.json
+Evotuning,ty1,covariance_agreement,0.9068523542067184,0.7122709172561195,0.8963091179556718,template_resample_spread,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-ty1.json
+Evotuning,ty1,covariance_ceiling,0.9533611396375945,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-ty1.json
+Evotuning,ty1,mip_agreement,0.8126003232182178,0.586919974269541,0.8275468108570051,template_resample_spread,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-ty1.json
+Evotuning,ty1,mip_ceiling,0.9316800071756081,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-ty1.json
+Evotuning,ty1,js_positional,0.011403890900058779,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-ty1.json
+Evotuning,ty1,entropy_delta,0.013606486863004863,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-ty1.json
+Evotuning,ty1,profile_log_likelihood,-57.4862819515951,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-ty1.json
+Evotuning,her2vh,edits_per_sequence,3.830000000000001,3.7674999999999996,3.8875,mean_over_templates,cross_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-her2vh.json
+Evotuning,her2vh,pairwise_pooled,22.765,,,,cross_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-her2vh.json
+Evotuning,her2vh,spectrum_mmd,0.9858055082013019,,,,cross_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-her2vh.json
+Evotuning,her2vh,kl_composition_pooled,0.0003741638682000096,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-her2vh.json
+Evotuning,her2vh,kl_positional,0.04797024254245815,,,,cross_study,disjoint,118,200.0,400,200,20,True,metrics/disjoint/evotune-her2vh.json
+Evotuning,her2vh,covariance_agreement,0.9292731835524095,0.690268889212125,0.9238631899015534,template_resample_spread,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-her2vh.json
+Evotuning,her2vh,covariance_ceiling,0.9746792290147925,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-her2vh.json
+Evotuning,her2vh,mip_agreement,0.8348081804523058,0.6143329117895407,0.8510716206407399,template_resample_spread,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-her2vh.json
+Evotuning,her2vh,mip_ceiling,0.9282877914042152,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-her2vh.json
+Evotuning,her2vh,js_positional,0.010162957803317831,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-her2vh.json
+Evotuning,her2vh,entropy_delta,0.033291533149044816,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-her2vh.json
+Evotuning,her2vh,profile_log_likelihood,-52.86634584561048,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-her2vh.json
+Evotuning (forced),ty1,edits_per_sequence,5.0,5.0,5.0,mean_over_templates,cross_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-forced-ty1.json
+Evotuning (forced),ty1,pairwise_pooled,25.2185,,,,cross_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-forced-ty1.json
+Evotuning (forced),ty1,spectrum_mmd,1.0893002340952675,,,,cross_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-forced-ty1.json
+Evotuning (forced),ty1,kl_composition_pooled,0.0005314788626912903,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-forced-ty1.json
+Evotuning (forced),ty1,kl_positional,0.08599204318803787,,,,cross_study,disjoint,119,200.0,400,200,20,True,metrics/disjoint/evotune-forced-ty1.json
+Evotuning (forced),ty1,covariance_agreement,0.87021116899163,0.6627020338157201,0.8631860456804984,template_resample_spread,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-forced-ty1.json
+Evotuning (forced),ty1,covariance_ceiling,0.9533611396375945,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-forced-ty1.json
+Evotuning (forced),ty1,mip_agreement,0.7354516441311292,0.4668026020807296,0.739047431589715,template_resample_spread,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-forced-ty1.json
+Evotuning (forced),ty1,mip_ceiling,0.9316800071756081,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-forced-ty1.json
+Evotuning (forced),ty1,js_positional,0.013954072799387863,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-forced-ty1.json
+Evotuning (forced),ty1,entropy_delta,0.08529406539873768,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-forced-ty1.json
+Evotuning (forced),ty1,profile_log_likelihood,-67.53770581005519,,,,within_study,disjoint,119,200.0,400,200,20,False,metrics/disjoint/evotune-forced-ty1.json
+Evotuning (forced),her2vh,edits_per_sequence,3.9975,3.9924999999999997,4.0,mean_over_templates,cross_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-forced-her2vh.json
+Evotuning (forced),her2vh,pairwise_pooled,24.998,,,,cross_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-forced-her2vh.json
+Evotuning (forced),her2vh,spectrum_mmd,1.1532725176644083,,,,cross_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-forced-her2vh.json
+Evotuning (forced),her2vh,kl_composition_pooled,0.0005946288276462877,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-forced-her2vh.json
+Evotuning (forced),her2vh,kl_positional,0.06732943646612519,,,,cross_study,disjoint,118,200.0,400,200,20,True,metrics/disjoint/evotune-forced-her2vh.json
+Evotuning (forced),her2vh,covariance_agreement,0.9093226535592386,0.6515947308845913,0.9021560202189512,template_resample_spread,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-forced-her2vh.json
+Evotuning (forced),her2vh,covariance_ceiling,0.9746792290147925,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-forced-her2vh.json
+Evotuning (forced),her2vh,mip_agreement,0.808562866454063,0.5430270124975749,0.8209269600977621,template_resample_spread,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-forced-her2vh.json
+Evotuning (forced),her2vh,mip_ceiling,0.9282877914042152,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-forced-her2vh.json
+Evotuning (forced),her2vh,js_positional,0.012067296752359341,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-forced-her2vh.json
+Evotuning (forced),her2vh,entropy_delta,0.09877753049489973,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-forced-her2vh.json
+Evotuning (forced),her2vh,profile_log_likelihood,-62.16910727314864,,,,within_study,disjoint,118,200.0,400,200,20,False,metrics/disjoint/evotune-forced-her2vh.json
+our EvoFlows port,ty1,edits_per_sequence,4.715,4.0424999999999995,5.3975,mean_over_templates,cross_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+our EvoFlows port,ty1,pairwise_pooled,26.2195,,,,cross_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+our EvoFlows port,ty1,spectrum_mmd,1.555285343594546,,,,cross_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+our EvoFlows port,ty1,kl_composition_pooled,0.0024446767686088816,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+our EvoFlows port,ty1,kl_positional,0.09733425129225602,,,,cross_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+our EvoFlows port,ty1,covariance_agreement,0.8136717098300199,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+our EvoFlows port,ty1,covariance_ceiling,0.9693624692968793,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+our EvoFlows port,ty1,mip_agreement,0.7211050853211521,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+our EvoFlows port,ty1,mip_ceiling,0.9280446941125653,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+our EvoFlows port,ty1,js_positional,0.017088672465839772,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+our EvoFlows port,ty1,entropy_delta,0.11831300178049087,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+our EvoFlows port,ty1,profile_log_likelihood,-79.80187460704049,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+our EvoFlows port,her2vh,edits_per_sequence,4.8875,4.15,5.654999999999999,mean_over_templates,cross_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+our EvoFlows port,her2vh,pairwise_pooled,24.2625,,,,cross_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+our EvoFlows port,her2vh,spectrum_mmd,1.1688028062936953,,,,cross_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+our EvoFlows port,her2vh,kl_composition_pooled,0.0006139187059332202,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+our EvoFlows port,her2vh,kl_positional,0.08481908069943539,,,,cross_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+our EvoFlows port,her2vh,covariance_agreement,0.8120016520791082,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+our EvoFlows port,her2vh,covariance_ceiling,0.9600215652627406,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+our EvoFlows port,her2vh,mip_agreement,0.7406801691315384,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+our EvoFlows port,her2vh,mip_ceiling,0.9258438060094122,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+our EvoFlows port,her2vh,js_positional,0.015475915449345812,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+our EvoFlows port,her2vh,entropy_delta,0.094228897272991,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+our EvoFlows port,her2vh,profile_log_likelihood,-80.51744671257796,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random mutations,ty1,edits_per_sequence,4.8325,4.782500000000001,4.875,mean_over_templates,cross_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random mutations,ty1,pairwise_pooled,32.2605,,,,cross_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random mutations,ty1,spectrum_mmd,2.0149519225033585,,,,cross_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random mutations,ty1,kl_composition_pooled,0.0036829712055318218,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random mutations,ty1,covariance_agreement,0.7547706842366372,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random mutations,ty1,mip_agreement,0.526536435811605,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random mutations,ty1,js_positional,0.027293815731189955,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random mutations,ty1,entropy_delta,0.21351022995290192,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random mutations,her2vh,edits_per_sequence,4.8325,4.7975,4.8625,mean_over_templates,cross_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random mutations,her2vh,pairwise_pooled,30.0925,,,,cross_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random mutations,her2vh,spectrum_mmd,1.6210278375154483,,,,cross_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random mutations,her2vh,kl_composition_pooled,0.0006148974210703236,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random mutations,her2vh,covariance_agreement,0.7379432129372966,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random mutations,her2vh,mip_agreement,0.5749259071086287,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random mutations,her2vh,js_positional,0.026069846735330283,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random mutations,her2vh,entropy_delta,0.1733939482521421,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random pairing,ty1,edits_per_sequence,24.885,23.345,26.4575,mean_over_templates,cross_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random pairing,ty1,pairwise_pooled,23.479,,,,cross_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random pairing,ty1,spectrum_mmd,0.7166283904507426,,,,cross_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random pairing,ty1,kl_composition_pooled,9.31407472105474e-05,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random pairing,ty1,covariance_agreement,0.9624512735887196,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random pairing,ty1,mip_agreement,0.935921422546783,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random pairing,ty1,js_positional,0.005619353250087208,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random pairing,ty1,entropy_delta,0.07615252634178932,,,,within_study,train_overlap_113,121,200,400,200,20,False,metrics/aligned/perseq-ty1.json
+random pairing,her2vh,edits_per_sequence,23.345,21.427500000000002,25.3375,mean_over_templates,cross_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random pairing,her2vh,pairwise_pooled,23.401,,,,cross_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random pairing,her2vh,spectrum_mmd,0.5830576729621181,,,,cross_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random pairing,her2vh,kl_composition_pooled,0.00012184381197298298,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random pairing,her2vh,covariance_agreement,0.9654866737061906,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random pairing,her2vh,mip_agreement,0.9347047741419862,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random pairing,her2vh,js_positional,0.0056224651050459885,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+random pairing,her2vh,entropy_delta,0.09504784517121895,,,,within_study,train_overlap_103,122,200,400,200,20,False,metrics/aligned/perseq-her2vh.json
+EvoDiff-MSA,ty1,edits_per_sequence,2.8725,,,,cross_study,unrecorded,121,200.0,400,200,20,False,metrics/evodiff_msa_baseline.json
+EvoDiff-MSA,ty1,pairwise_pooled,25.3405,,,,cross_study,unrecorded,121,200.0,400,200,20,False,metrics/evodiff_msa_baseline.json
+EvoDiff-MSA,ty1,spectrum_mmd,1.6387800340497176,,,,cross_study,unrecorded,121,200.0,400,200,20,False,metrics/evodiff_msa_baseline.json
+EvoDiff-MSA,ty1,kl_composition_pooled,0.0023635646442998347,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evodiff_msa_baseline.json
+EvoDiff-MSA,ty1,covariance_agreement,0.7686974081176848,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evodiff_msa_baseline.json
+EvoDiff-MSA,ty1,covariance_ceiling,0.9693624692968776,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evodiff_msa_baseline.json
+EvoDiff-MSA,ty1,mip_agreement,0.6013348397209938,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evodiff_msa_baseline.json
+EvoDiff-MSA,ty1,mip_ceiling,0.928044694112564,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evodiff_msa_baseline.json
+EvoDiff-MSA,ty1,js_positional,0.019468813047266397,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evodiff_msa_baseline.json
+EvoDiff-MSA,ty1,entropy_delta,0.08290282216090689,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evodiff_msa_baseline.json
+EvoDiff-MSA,ty1,profile_log_likelihood,-77.6073583446596,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evodiff_msa_baseline.json
+EvoDiff-MSA,her2vh,edits_per_sequence,2.8175,,,,cross_study,unrecorded,122,200.0,400,200,20,False,metrics/evodiff/her2vh-evodiff_msa_baseline.json
+EvoDiff-MSA,her2vh,pairwise_pooled,23.129,,,,cross_study,unrecorded,122,200.0,400,200,20,False,metrics/evodiff/her2vh-evodiff_msa_baseline.json
+EvoDiff-MSA,her2vh,spectrum_mmd,1.2605108091563622,,,,cross_study,unrecorded,122,200.0,400,200,20,False,metrics/evodiff/her2vh-evodiff_msa_baseline.json
+EvoDiff-MSA,her2vh,kl_composition_pooled,0.00047250466933805585,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evodiff/her2vh-evodiff_msa_baseline.json
+EvoDiff-MSA,her2vh,covariance_agreement,0.7685706768656269,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evodiff/her2vh-evodiff_msa_baseline.json
+EvoDiff-MSA,her2vh,covariance_ceiling,0.9600215652627422,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evodiff/her2vh-evodiff_msa_baseline.json
+EvoDiff-MSA,her2vh,mip_agreement,0.6725329952886501,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evodiff/her2vh-evodiff_msa_baseline.json
+EvoDiff-MSA,her2vh,mip_ceiling,0.9258438060094104,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evodiff/her2vh-evodiff_msa_baseline.json
+EvoDiff-MSA,her2vh,js_positional,0.017906504349107722,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evodiff/her2vh-evodiff_msa_baseline.json
+EvoDiff-MSA,her2vh,entropy_delta,0.054077012018780846,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evodiff/her2vh-evodiff_msa_baseline.json
+EvoDiff-MSA,her2vh,profile_log_likelihood,-77.66639071996589,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evodiff/her2vh-evodiff_msa_baseline.json
+Evotuning,ty1,edits_per_sequence,3.8400000000000007,,,,cross_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline.json
+Evotuning,ty1,pairwise_pooled,25.165,,,,cross_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline.json
+Evotuning,ty1,spectrum_mmd,1.585094634398846,,,,cross_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline.json
+Evotuning,ty1,kl_composition_pooled,0.002071519639465512,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline.json
+Evotuning,ty1,covariance_agreement,0.7867717107253581,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline.json
+Evotuning,ty1,mip_agreement,0.6591612447208947,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline.json
+Evotuning,ty1,js_positional,0.01713401192994161,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline.json
+Evotuning,ty1,entropy_delta,0.0802103734408306,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline.json
+Evotuning,ty1,profile_log_likelihood,-76.03277656542599,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline.json
+Evotuning,her2vh,edits_per_sequence,3.8625000000000007,,,,cross_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline.json
+Evotuning,her2vh,pairwise_pooled,22.466,,,,cross_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline.json
+Evotuning,her2vh,spectrum_mmd,1.1727052059234775,,,,cross_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline.json
+Evotuning,her2vh,kl_composition_pooled,0.0003164062973092545,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline.json
+Evotuning,her2vh,covariance_agreement,0.7857961101114603,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline.json
+Evotuning,her2vh,mip_agreement,0.6920440981199247,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline.json
+Evotuning,her2vh,js_positional,0.016068560445529127,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline.json
+Evotuning,her2vh,entropy_delta,0.04292042469663504,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline.json
+Evotuning,her2vh,profile_log_likelihood,-75.41469999897812,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline.json
+Evotuning (forced),ty1,edits_per_sequence,4.0,,,,cross_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline_forced.json
+Evotuning (forced),ty1,pairwise_pooled,27.0525,,,,cross_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline_forced.json
+Evotuning (forced),ty1,spectrum_mmd,1.744226189460523,,,,cross_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline_forced.json
+Evotuning (forced),ty1,kl_composition_pooled,0.0031544962184558837,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline_forced.json
+Evotuning (forced),ty1,covariance_agreement,0.7380383370581355,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline_forced.json
+Evotuning (forced),ty1,mip_agreement,0.5612305643911317,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline_forced.json
+Evotuning (forced),ty1,js_positional,0.01952184786852861,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline_forced.json
+Evotuning (forced),ty1,entropy_delta,0.1338749278569421,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline_forced.json
+Evotuning (forced),ty1,profile_log_likelihood,-84.51378691086218,,,,within_study,unrecorded,121,200.0,400,200,20,False,metrics/evotune/ty1-evotune_baseline_forced.json
+Evotuning (forced),her2vh,edits_per_sequence,4.0,,,,cross_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline_forced.json
+Evotuning (forced),her2vh,pairwise_pooled,24.669,,,,cross_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline_forced.json
+Evotuning (forced),her2vh,spectrum_mmd,1.3503656912110877,,,,cross_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline_forced.json
+Evotuning (forced),her2vh,kl_composition_pooled,0.0006199584014267126,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline_forced.json
+Evotuning (forced),her2vh,covariance_agreement,0.7529921490523587,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline_forced.json
+Evotuning (forced),her2vh,mip_agreement,0.6510875867604087,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline_forced.json
+Evotuning (forced),her2vh,js_positional,0.01716659733617538,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline_forced.json
+Evotuning (forced),her2vh,entropy_delta,0.09436471121752277,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline_forced.json
+Evotuning (forced),her2vh,profile_log_likelihood,-82.76893824136195,,,,within_study,unrecorded,122,200.0,400,200,20,False,metrics/evotune/her2vh-evotune_baseline_forced.json
+schedule linear,ty1,edits_per_sequence,4.5875,,,,cross_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedlin-ty1.json
+schedule linear,ty1,pairwise_pooled,26.0405,,,,cross_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedlin-ty1.json
+schedule linear,ty1,spectrum_mmd,1.545268989529007,,,,cross_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedlin-ty1.json
+schedule linear,ty1,kl_composition_pooled,0.0024054173061919637,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedlin-ty1.json
+schedule linear,ty1,covariance_agreement,0.80382234807497,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedlin-ty1.json
+schedule linear,ty1,covariance_ceiling,0.9693624692968776,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedlin-ty1.json
+schedule linear,ty1,mip_agreement,0.6867914182408713,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedlin-ty1.json
+schedule linear,ty1,mip_ceiling,0.928044694112564,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedlin-ty1.json
+schedule linear,ty1,js_positional,0.017017133648823998,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedlin-ty1.json
+schedule linear,ty1,entropy_delta,0.11711446869000197,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedlin-ty1.json
+schedule linear,ty1,profile_log_likelihood,-79.51206807496725,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedlin-ty1.json
+schedule linear,her2vh,edits_per_sequence,5.167500000000001,,,,cross_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedlin-her2vh.json
+schedule linear,her2vh,pairwise_pooled,24.3455,,,,cross_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedlin-her2vh.json
+schedule linear,her2vh,spectrum_mmd,1.1734298019055067,,,,cross_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedlin-her2vh.json
+schedule linear,her2vh,kl_composition_pooled,0.00045373839461421476,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedlin-her2vh.json
+schedule linear,her2vh,covariance_agreement,0.8050590819540591,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedlin-her2vh.json
+schedule linear,her2vh,covariance_ceiling,0.9600215652627422,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedlin-her2vh.json
+schedule linear,her2vh,mip_agreement,0.7234535613230356,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedlin-her2vh.json
+schedule linear,her2vh,mip_ceiling,0.9258438060094104,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedlin-her2vh.json
+schedule linear,her2vh,js_positional,0.01504147044989628,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedlin-her2vh.json
+schedule linear,her2vh,entropy_delta,0.09892237242280594,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedlin-her2vh.json
+schedule linear,her2vh,profile_log_likelihood,-81.27760667490539,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedlin-her2vh.json
+schedule cubic,ty1,edits_per_sequence,5.3,,,,cross_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedcub-ty1.json
+schedule cubic,ty1,pairwise_pooled,26.523,,,,cross_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedcub-ty1.json
+schedule cubic,ty1,spectrum_mmd,1.5823005403525638,,,,cross_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedcub-ty1.json
+schedule cubic,ty1,kl_composition_pooled,0.0023721453727297824,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedcub-ty1.json
+schedule cubic,ty1,covariance_agreement,0.7987719290031559,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedcub-ty1.json
+schedule cubic,ty1,covariance_ceiling,0.9693624692968776,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedcub-ty1.json
+schedule cubic,ty1,mip_agreement,0.6797720664908434,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedcub-ty1.json
+schedule cubic,ty1,mip_ceiling,0.928044694112564,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedcub-ty1.json
+schedule cubic,ty1,js_positional,0.01702871857726354,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedcub-ty1.json
+schedule cubic,ty1,entropy_delta,0.11983314742759987,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedcub-ty1.json
+schedule cubic,ty1,profile_log_likelihood,-80.30576286248255,,,,within_study,unrecorded,121,200,400,200,20,False,metrics/schedule/schedcub-ty1.json
+schedule cubic,her2vh,edits_per_sequence,5.534999999999999,,,,cross_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedcub-her2vh.json
+schedule cubic,her2vh,pairwise_pooled,24.9235,,,,cross_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedcub-her2vh.json
+schedule cubic,her2vh,spectrum_mmd,1.1946783039797781,,,,cross_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedcub-her2vh.json
+schedule cubic,her2vh,kl_composition_pooled,0.0005595208368028613,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedcub-her2vh.json
+schedule cubic,her2vh,covariance_agreement,0.8112846841574649,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedcub-her2vh.json
+schedule cubic,her2vh,covariance_ceiling,0.9600215652627422,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedcub-her2vh.json
+schedule cubic,her2vh,mip_agreement,0.6876091895336474,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedcub-her2vh.json
+schedule cubic,her2vh,mip_ceiling,0.9258438060094104,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedcub-her2vh.json
+schedule cubic,her2vh,js_positional,0.01543326788374295,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedcub-her2vh.json
+schedule cubic,her2vh,entropy_delta,0.10258235471460131,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedcub-her2vh.json
+schedule cubic,her2vh,profile_log_likelihood,-82.01776661991275,,,,within_study,unrecorded,122,200,400,200,20,False,metrics/schedule/schedcub-her2vh.json
+PAPER: Random pairing,paper_mean_of_6,edits_per_sequence,117.90085499999999,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: EvoFlow (ours),paper_mean_of_6,edits_per_sequence,32.13702333333333,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: EvoDiff-MSA,paper_mean_of_6,edits_per_sequence,13.386871666666666,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Evotune,paper_mean_of_6,edits_per_sequence,13.457586666666666,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Evotune (forced),paper_mean_of_6,edits_per_sequence,34.42742166666667,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Random,paper_mean_of_6,edits_per_sequence,31.485991666666663,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Random pairing,paper_mean_of_6,pairwise_pooled,117.12511666666667,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: EvoFlow (ours),paper_mean_of_6,pairwise_pooled,117.43951166666666,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: EvoDiff-MSA,paper_mean_of_6,pairwise_pooled,119.61715666666667,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Evotune,paper_mean_of_6,pairwise_pooled,118.6488,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Evotune (forced),paper_mean_of_6,pairwise_pooled,128.48406,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Random,paper_mean_of_6,pairwise_pooled,139.799425,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Random pairing,paper_mean_of_6,covariance_agreement,0.9878483333333333,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: EvoFlow (ours),paper_mean_of_6,covariance_agreement,0.9718016666666666,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: EvoDiff-MSA,paper_mean_of_6,covariance_agreement,0.9854250000000001,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Evotune,paper_mean_of_6,covariance_agreement,0.9877483333333333,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Evotune (forced),paper_mean_of_6,covariance_agreement,0.9485533333333334,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Random,paper_mean_of_6,covariance_agreement,0.897005,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Random pairing,paper_mean_of_6,js_positional,0.002495,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: EvoFlow (ours),paper_mean_of_6,js_positional,0.004481666666666667,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: EvoDiff-MSA,paper_mean_of_6,js_positional,0.003283333333333333,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Evotune,paper_mean_of_6,js_positional,0.0027833333333333334,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Evotune (forced),paper_mean_of_6,js_positional,0.008195,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Random,paper_mean_of_6,js_positional,0.02105,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Random pairing,paper_mean_of_6,kl_positional,0.009745,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: EvoFlow (ours),paper_mean_of_6,kl_positional,0.01814666666666667,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: EvoDiff-MSA,paper_mean_of_6,kl_positional,0.01248,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Evotune,paper_mean_of_6,kl_positional,0.010733333333333333,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Evotune (forced),paper_mean_of_6,kl_positional,0.029908333333333332,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Random,paper_mean_of_6,kl_positional,0.072185,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Random pairing,paper_mean_of_6,mip_agreement,0.9267916666666666,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: EvoFlow (ours),paper_mean_of_6,mip_agreement,0.8854633333333334,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: EvoDiff-MSA,paper_mean_of_6,mip_agreement,0.8950916666666666,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Evotune,paper_mean_of_6,mip_agreement,0.9202816666666666,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Evotune (forced),paper_mean_of_6,mip_agreement,0.8041433333333333,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Random,paper_mean_of_6,mip_agreement,0.6598116666666667,,,,within_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Random pairing,paper_mean_of_6,spectrum_mmd,0.65273,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: EvoFlow (ours),paper_mean_of_6,spectrum_mmd,1.1284833333333333,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: EvoDiff-MSA,paper_mean_of_6,spectrum_mmd,0.7757116666666667,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Evotune,paper_mean_of_6,spectrum_mmd,0.6874950000000001,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Evotune (forced),paper_mean_of_6,spectrum_mmd,1.7462799999999998,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json
+PAPER: Random,paper_mean_of_6,spectrum_mmd,2.26363,,,,cross_study,published,,,,,,False,metrics/evoflows_figure3.json

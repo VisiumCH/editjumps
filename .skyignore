@@ -1,0 +1,31 @@
+# Exclude from the SkyPilot workdir sync (gitignore-style). Managed jobs upload the
+# workdir to a GCS bucket, so keep it to *code only*: the VM rebuilds the venv (`uv sync`)
+# and fetches data from the DVC remote (`dvc pull`). Shipping .venv/ and data/ is slow,
+# symlink-fragile (mmseqs temp dirs), and redundant.
+#
+# NOTE: this file is NOT .gitignore — SkyPilot only auto-excludes .git, so anything gitignored but
+# not listed here still gets uploaded. A 1.6 GB .venv went up that way once, and a 910 MB
+# .evodiff_env was mid-upload before being caught. A test now derives the required entries from
+# editjumps/**/install_*.sh rather than trusting this list to stay complete, but when you add a large
+# local-only directory, add it in BOTH places.
+# Sanity check before a managed launch:
+#   du -sm * .[!.]* 2>/dev/null | sort -rn | head    # anything big and not listed below?
+.venv/
+.evodiff_env/
+# Agent worktrees: each is a full repo copy, and one carried a 910 MB .evodiff_env — 6.4 GB
+# total, which hung two launches for ~50 minutes on the workdir upload before this was added.
+# Never needed on the VM: the job re-clones nothing and reads data from the DVC remote.
+.claude/
+.uvcache_tmp/
+.dvc_cache_global/
+data/
+.dvc/cache/
+*.db
+mlruns/
+mlartifacts/
+__pycache__/
+.ruff_cache/
+.pytest_cache/
+.terraform/
+deploy/gcp/terraform/.terraform/
+figures/

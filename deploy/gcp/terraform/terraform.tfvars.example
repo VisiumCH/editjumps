@@ -1,0 +1,7 @@
+# Copy to terraform.tfvars (gitignored) and fill in. This is the GCP root.
+project_id         = "your-gcp-project"
+region             = "europe-west6" # Zurich
+dvc_bucket_name    = "CHANGEME-profound-dvc"
+mlflow_bucket_name = "CHANGEME-profound-mlflow"
+image              = "europe-west6-docker.pkg.dev/your-gcp-project/profound/mlflow:latest"
+# invoker_members  = ["domain:your-org.com"]

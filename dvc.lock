@@ -1,0 +1,345 @@
+schema: '2.0'
+stages:
+  download_oas:
+    cmd: uv run python -m editjumps.pipeline.preprocess.pretrain.download_oas 
+      --output-folder data/pretrain --collection paired --min-len 70 --max-len 
+      200 --pair-sep "." $([ "true" = "true" ] && echo --pair-chains) $([ "true"
+      = "true" ] && echo --emit-cdr-keys) $([ -n "None" ] && [ "None" != "None" 
+      ] && echo --max-units None)
+    deps:
+    - path: editjumps/pipeline/preprocess/pretrain/download_oas.py
+      hash: md5
+      md5: 3d206bb481dda5921da3e19e7145cd07
+      size: 14590
+    params:
+      params.yaml:
+        oas.collection: paired
+        oas.emit_cdr_keys: true
+        oas.max_len: 200
+        oas.max_units:
+        oas.min_len: 70
+        oas.pair_chains: true
+        oas.pair_sep: .
+    outs:
+    - path: data/pretrain/oas_corpus.cdr_keys.tsv.gz
+      hash: md5
+      md5: b0ec91917542556191ab5bdad84faa1c
+      size: 27571888
+    - path: data/pretrain/oas_corpus.txt.gz
+      hash: md5
+      md5: 1c46d10867fb77a84b62bd0e232fe7af
+      size: 100352972
+    - path: data/pretrain/oas_units
+      hash: md5
+      md5: 3d09365f2d0d9f79b66e5bd731618f35.dir
+      size: 3541358395
+      nfiles: 611
+  split_corpus:
+    cmd: uv run python -m editjumps.pipeline.preprocess.pretrain.split_corpus 
+      --output-folder data/pretrain --corpus-name oas_corpus.clean.txt.gz 
+      --cdr-keys-name oas_corpus.clean.cdr_keys.tsv.gz --val-frac 0.05 
+      --min-seq-id 0.9 --coverage 0.8 --mmseqs-mode easy-cluster 
+      --chain-handling combine --split-memory-limit 8G
+    deps:
+    - path: data/pretrain/oas_corpus.clean.cdr_keys.tsv.gz
+      hash: md5
+      md5: ad93a5f910d411e2ed71ee380e3b082c
+      size: 27568639
+    - path: data/pretrain/oas_corpus.clean.txt.gz
+      hash: md5
+      md5: b23db3c267d61fc8a30e60aa4f11e28f
+      size: 100346441
+    - path: editjumps/core/cluster_split.py
+      hash: md5
+      md5: 0472c596b0a23460ded7324000cb08ed
+      size: 7991
+    - path: editjumps/pipeline/preprocess/pretrain/split_corpus.py
+      hash: md5
+      md5: 6241b93236c49029b6533c3cee41d97e
+      size: 7306
+    params:
+      params.yaml:
+        chain_handling: combine
+        split.coverage: 0.8
+        split.min_seq_id: 0.9
+        split.mmseqs_mode: easy-cluster
+        split.val_frac: 0.05
+    outs:
+    - path: data/pretrain/oas_corpus.clean.train.txt.gz
+      hash: md5
+      md5: dd74f58f159f395c2aaf3a0ee70005b4
+      size: 94867624
+    - path: data/pretrain/oas_corpus.clean.val.txt.gz
+      hash: md5
+      md5: 016a89c03eb00184f80b82354c245619
+      size: 4722905
+  fetch_base_checkpoint:
+    cmd: uv run python -m editjumps.pipeline.train.convert_esm_checkpoint 
+      --loader-name esm2_t33_650M_UR50D --output-folder 
+      data/pretrain/base_checkpoints/esm2_t33_650M_UR50D
+    deps:
+    - path: editjumps/pipeline/train/convert_esm_checkpoint.py
+      hash: md5
+      md5: 431e0955de36299436770ddbc6d27dfa
+      size: 6646
+    params:
+      params.yaml:
+        pretrain.base_checkpoint_loader_name: esm2_t33_650M_UR50D
+        pretrain.model_name: data/pretrain/base_checkpoints/esm2_t33_650M_UR50D
+    outs:
+    - path: data/pretrain/base_checkpoints/esm2_t33_650M_UR50D
+      hash: md5
+      md5: 4ad4394bdd025ffaa1f292922ee5c201.dir
+      size: 2604238457
+      nfiles: 4
+  pretrain_esm:
+    cmd: uv run python -m editjumps.pipeline.train.pretrain_esm --corpus 
+      data/pretrain/oas_corpus.clean.train.txt.gz --val-corpus 
+      data/pretrain/oas_corpus.clean.val.txt.gz --output-folder data/pretrain 
+      --model-name data/pretrain/base_checkpoints/esm2_t12_35M_UR50D --epochs 
+      1.0 --max-steps 200 --batch-size 16 --max-length 280 --max-seqs 20000 
+      --mlm-probability 0.15 --save-steps 50 --save-total-limit 3 --metrics-path
+      metrics/pretrain_esm.json
+    deps:
+    - path: data/pretrain/base_checkpoints/esm2_t12_35M_UR50D
+      hash: md5
+      md5: d2c897f16dbfc62d58862c5e6781914b.dir
+      size: 134030456
+      nfiles: 4
+    - path: data/pretrain/oas_corpus.clean.train.txt.gz
+      hash: md5
+      md5: dd74f58f159f395c2aaf3a0ee70005b4
+      size: 94867624
+    - path: data/pretrain/oas_corpus.clean.val.txt.gz
+      hash: md5
+      md5: 016a89c03eb00184f80b82354c245619
+      size: 4722905
+    - path: editjumps/core/utils.py
+      hash: md5
+      md5: ba44507b4e4bee04a59b03cc82c62ff8
+      size: 6706
+    - path: editjumps/pipeline/train/pretrain_esm.py
+      hash: md5
+      md5: 8fb88484aaad467641bc417fabe16b95
+      size: 16705
+    params:
+      params.yaml:
+        pretrain.batch_size: 16
+        pretrain.epochs: 1.0
+        pretrain.max_length: 280
+        pretrain.max_seqs: 20000
+        pretrain.max_steps: 200
+        pretrain.mlm_probability: 0.15
+        pretrain.model_name: data/pretrain/base_checkpoints/esm2_t12_35M_UR50D
+        pretrain.save_steps: 50
+        pretrain.save_total_limit: 3
+    outs:
+    - path: data/pretrain/esm2_oas
+      hash: md5
+      md5: 1dae911a396c8203ae5663301a2e8612.dir
+      size: 134035643
+      nfiles: 5
+    - path: metrics/pretrain_esm.json
+      hash: md5
+      md5: bec1175306d2f3d29c1884e4b4f448e3
+      size: 227
+  build_homolog_pairs:
+    cmd: uv run python -m editjumps.pipeline.preprocess.pretrain.homolog_pairs 
+      --output-folder data/pretrain --min-seq-id 0.5 --coverage 0.8 
+      --mmseqs-mode easy-cluster --max-pairs-per-family 20 --max-lines 0 
+      --direction none --split-memory-limit 8G 
+      --corpus-name oas_corpus.clean.txt.gz --cdr-keys-name 
+      oas_corpus.clean.cdr_keys.tsv.gz
+    deps:
+    - path: data/pretrain/oas_corpus.clean.cdr_keys.tsv.gz
+      hash: md5
+      md5: ad93a5f910d411e2ed71ee380e3b082c
+      size: 27568639
+    - path: data/pretrain/oas_corpus.clean.txt.gz
+      hash: md5
+      md5: b23db3c267d61fc8a30e60aa4f11e28f
+      size: 100346441
+    - path: editjumps/core/cluster_split.py
+      hash: md5
+      md5: 0d59d2e7874ea16d38332b4e7cb435f5
+      size: 11932
+    - path: editjumps/pipeline/preprocess/pretrain/homolog_pairs.py
+      hash: md5
+      md5: a10977e1758e6aa23a5f893438fb2bd2
+      size: 13160
+    params:
+      params.yaml:
+        homolog_pairs.coverage: 0.8
+        homolog_pairs.direction: none
+        homolog_pairs.max_lines: 0
+        homolog_pairs.max_pairs_per_family: 20
+        homolog_pairs.min_seq_id: 0.5
+        homolog_pairs.mmseqs_mode: easy-cluster
+    outs:
+    - path: data/pretrain/oas_homolog_pairs.tsv.gz
+      hash: md5
+      md5: 4cb9f191144bd20e3615e40d17ea128e
+      size: 64987998
+  train_edit_flows:
+    cmd: uv run python -m editjumps.pipeline.train.train_edit_flows --pairs 
+      data/pretrain/oas_homolog_pairs.tsv.gz --model-name data/pretrain/esm2_oas
+      --output-folder data/pretrain/edit_flows --max-steps 200 --batch-size 2 
+      --lr 0.0001 --save-steps 100 --path needleman_wunsch --schedule linear 
+      --loss edit_flow
+    deps:
+    - path: data/pretrain/esm2_oas
+      hash: md5
+      md5: 1dae911a396c8203ae5663301a2e8612.dir
+      size: 134035643
+      nfiles: 5
+    - path: data/pretrain/oas_homolog_pairs.tsv.gz
+      hash: md5
+      md5: 88e83bc0a48eb5fcad5d7dc63918e0a0
+      size: 59396712
+    - path: editjumps/core/edit_flows/alignment.py
+      hash: md5
+      md5: ce22b4a86207dc613286d0e184860246
+      size: 9256
+    - path: editjumps/core/edit_flows/loss.py
+      hash: md5
+      md5: a9edc389632d3bcd1628a0d1702c8a1d
+      size: 6311
+    - path: editjumps/core/edit_flows/stages.py
+      hash: md5
+      md5: 6b07c79c9025accbca226c688abee9cc
+      size: 11380
+    - path: editjumps/pipeline/train/evoflows.py
+      hash: md5
+      md5: 7f55579cc5de6ae1013d785b41598437
+      size: 29986
+    - path: editjumps/pipeline/train/train_edit_flows.py
+      hash: md5
+      md5: 89a32ad55fefb9ca62da2da6ca099d51
+      size: 3729
+    params:
+      params.yaml:
+        edit_flows.batch_size: 2
+        edit_flows.loss: edit_flow
+        edit_flows.lr: 0.0001
+        edit_flows.max_steps: 200
+        edit_flows.path: needleman_wunsch
+        edit_flows.save_steps: 100
+        edit_flows.schedule: linear
+    outs:
+    - path: data/pretrain/edit_flows
+      hash: md5
+      md5: f1c5aecdbf7cb4a1238e67b0dbb56776.dir
+      size: 681149180
+      nfiles: 6
+  seed_homologs:
+    cmd: uv run python -m editjumps.pipeline.preprocess.pretrain.seed_homologs --seeds
+      editjumps/pipeline/preprocess/pretrain/seeds/evoflows_seeds.fasta --corpus 
+      data/pretrain/oas_corpus.clean.txt.gz --chain heavy --evalue 0.1 
+      --coverage 0.8 --sensitivity 7.5 --max-seqs 100000 --min-identity 0.7 
+      --output-folder data/interim/seed_families --metrics-path 
+      metrics/seed_homologs.json
+    deps:
+    - path: data/pretrain/oas_corpus.clean.txt.gz
+      hash: md5
+      md5: b23db3c267d61fc8a30e60aa4f11e28f
+      size: 100346441
+    - path: editjumps/pipeline/preprocess/pretrain/seeds/evoflows_seeds.fasta
+      hash: md5
+      md5: 646352bf049f393cdd09cec58bf2f393
+      size: 435
+    - path: editjumps/pipeline/preprocess/pretrain/seed_homologs.py
+      hash: md5
+      md5: be768d9f764383e764d88183ec1eb684
+      size: 11436
+    params:
+      params.yaml:
+        seed_homologs.chain: heavy
+        seed_homologs.coverage: 0.8
+        seed_homologs.evalue: 0.1
+        seed_homologs.max_seqs: 100000
+        seed_homologs.min_identity: 0.7
+        seed_homologs.sensitivity: 7.5
+    outs:
+    - path: data/interim/seed_families
+      hash: md5
+      md5: edb693c0378ef255c491ba1fe58a7cd2.dir
+      size: 12854218
+      nfiles: 3
+    - path: metrics/seed_homologs.json
+      hash: md5
+      md5: 8e61921cf764feb44c13f77e6e80290e
+      size: 1084
+  evodiff_msa_baseline:
+    cmd: uv run python -m editjumps.pipeline.evaluate.evodiff_msa_baseline 
+      --family-fasta data/interim/seed_families/Anti-SARS-CoV-2_VHH_Ty1.fasta 
+      --mode inpaint --model msa-oa-dm-maxsub --n-templates 20 --n-variants 20 
+      --mutations 4 --holdout-size 200 --msa-size 256 --n-sequences 64 
+      --selection-type "" --temperature 1.0 --penalty-value 2.0 --device auto 
+      --budget-mode realised --max-rounds 8 --seed 0 --k 3 --workdir 
+      data/interim/evodiff_msa --metrics-path metrics/evodiff_msa_baseline.json
+    deps:
+    - path: data/interim/seed_families
+      hash: md5
+      md5: edb693c0378ef255c491ba1fe58a7cd2.dir
+      size: 12854218
+      nfiles: 3
+    - path: editjumps/core/evodiff_msa/evodiff_msa_runner.py
+      hash: md5
+      md5: 1d86e4139453f37aee79610e7404f1f0
+      size: 10877
+    - path: editjumps/core/evodiff_msa/proposer.py
+      hash: md5
+      md5: ef90ba1a2595c04491078f0ebb049ee9
+      size: 22377
+    - path: editjumps/core/evotune/profile.py
+      hash: md5
+      md5: bbc8582d43732dd6b6283fa8aaf6b101
+      size: 16118
+    - path: editjumps/core/family_split.py
+      hash: md5
+      md5: 337af85dbb5b5d7faf12114a3a0a693e
+      size: 4541
+    - path: editjumps/core/generation_metrics.py
+      hash: md5
+      md5: 83e18985652cc11c21ee438ec49d3110
+      size: 17747
+    - path: editjumps/core/generation_metrics_undefined.py
+      hash: md5
+      md5: 918570e59cf0ecd0ce4701b19b623aae
+      size: 7663
+    - path: editjumps/pipeline/evaluate/evodiff_msa_baseline.py
+      hash: md5
+      md5: bfa906323b816429f00e221e7b317fa6
+      size: 28684
+    - path: editjumps/pipeline/evaluate/evotune_baseline.py
+      hash: md5
+      md5: 6dd2d11c6142e182742a1f48ed8d2af4
+      size: 32781
+    - path: editjumps/pipeline/evaluate/generation_eval.py
+      hash: md5
+      md5: 16b43404acd8529399fde207073c39d1
+      size: 25711
+    params:
+      params.yaml:
+        evodiff.device: auto
+        evodiff.mode: inpaint
+        evodiff.model: msa-oa-dm-maxsub
+        evodiff.msa_size: 256
+        evodiff.n_sequences: 64
+        evodiff.penalty_value: 2.0
+        evodiff.selection_type: ''
+        evodiff.temperature: 1.0
+        evotune.budget_mode: realised
+        evotune.family: Anti-SARS-CoV-2_VHH_Ty1.fasta
+        evotune.holdout_size: 200
+        evotune.k: 3
+        evotune.max_rounds: 8
+        evotune.mutations: 4
+        evotune.n_templates: 20
+        evotune.n_variants: 20
+        evotune.seed: 0
+    outs:
+    - path: metrics/evodiff_msa_baseline.json
+      hash: md5
+      md5: 65734c4785fd3efae000bbc719d26f92
+      size: 5207

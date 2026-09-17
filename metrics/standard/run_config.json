@@ -1,0 +1,70 @@
+{
+  "target": {
+    "property": null,
+    "seed_family": "Anti-SARS-CoV-2_VHH_Ty1.fasta",
+    "families_dir": "data/interim/seed_families",
+    "pairs": "data/pretrain/oas_homolog_pairs.tsv.gz",
+    "clock": 40.0
+  },
+  "comparability": {
+    "n_templates": 20,
+    "n_variants": 20,
+    "holdout_size": 200,
+    "ceiling_n": 300,
+    "alignment_template": "first_split_template",
+    "split_seed": 0,
+    "spectrum_k": 3,
+    "mutations": 4,
+    "match_budget_to_editor": true,
+    "budget_mode": "realised",
+    "max_rounds": 8,
+    "pll_model": "",
+    "pll_positions": 24
+  },
+  "arm": {
+    "model_folder": "data/pretrain/edit_flows",
+    "rate_head": "linear",
+    "q_head": "fresh",
+    "path": "needleman_wunsch",
+    "schedule": "linear",
+    "loss": "edit_flow",
+    "sampler": "euler",
+    "n_steps": 50,
+    "evotuned_model": "data/pretrain/esm2_evotuned",
+    "evotune_train_corpus": "data/pretrain/evotune_family.train.txt.gz",
+    "evotune_temperature": 1.0,
+    "evotune_profile_size": 200,
+    "evodiff_model": "msa-oa-dm-maxsub",
+    "evodiff_mode": "inpaint",
+    "evodiff_msa_size": 256,
+    "evodiff_n_sequences": 64,
+    "evodiff_selection_type": "",
+    "evodiff_temperature": 1.0,
+    "evodiff_penalty_value": 2.0,
+    "evodiff_device": "auto"
+  },
+  "comparability_fingerprint": "2469f6e348df",
+  "out_dir": "metrics/standard",
+  "steps": [
+    {
+      "name": "editor",
+      "command": "editjumps generation-eval --model-folder data/pretrain/edit_flows --pairs data/pretrain/oas_homolog_pairs.tsv.gz --n-templates 20 --n-variants 20 --n-steps 50 --holdout-size 200 --ceiling-n 300 --seed 0 --k 3 --clock 40.0 --rate-head linear --q-head fresh --pll-model \"\" --pll-positions 24 --family-fasta data/interim/seed_families/Anti-SARS-CoV-2_VHH_Ty1.fasta --metrics-path metrics/standard/generation_eval.json",
+      "metrics_path": "metrics/standard/generation_eval.json"
+    },
+    {
+      "name": "evotuned",
+      "command": "editjumps evotune-baseline --model-folder data/pretrain/esm2_evotuned --family-fasta data/interim/seed_families/Anti-SARS-CoV-2_VHH_Ty1.fasta --train-corpus data/pretrain/evotune_family.train.txt.gz --n-templates 20 --n-variants 20 --mutations 4 --temperature 1.0 --holdout-size 200 --ceiling-n 300 --profile-size 200 --budget-mode realised --max-rounds 8 --seed 0 --k 3 --mutations-from metrics/standard/generation_eval.json --no-forced --metrics-path metrics/standard/evotuned.json",
+      "metrics_path": "metrics/standard/evotuned.json"
+    },
+    {
+      "name": "evotuned_forced",
+      "command": "editjumps evotune-baseline --model-folder data/pretrain/esm2_evotuned --family-fasta data/interim/seed_families/Anti-SARS-CoV-2_VHH_Ty1.fasta --train-corpus data/pretrain/evotune_family.train.txt.gz --n-templates 20 --n-variants 20 --mutations 4 --temperature 1.0 --holdout-size 200 --ceiling-n 300 --profile-size 200 --budget-mode realised --max-rounds 8 --seed 0 --k 3 --mutations-from metrics/standard/generation_eval.json --forced --metrics-path metrics/standard/evotuned_forced.json",
+      "metrics_path": "metrics/standard/evotuned_forced.json"
+    },
+    {
+      "name": "evodiff",
+      "command": "editjumps evodiff-msa-baseline --family-fasta data/interim/seed_families/Anti-SARS-CoV-2_VHH_Ty1.fasta --mode inpaint --model msa-oa-dm-maxsub --n-templates 20 --n-variants 20 --mutations 4 --holdout-size 200 --ceiling-n 300 --msa-size 256 --n-sequences 64 --selection-type \"\" --temperature 1.0 --penalty-value 2.0 --device auto --budget-mode realised --max-rounds 8 --seed 0 --k 3 --mutations-from metrics/standard/generation_eval.json --metrics-path metrics/standard/evodiff_msa_baseline.json",
+      "metrics_path": "metrics/standard/evodiff_msa_baseline.json"
+    }
+  ]
+}

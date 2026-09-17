@@ -1,0 +1,559 @@
+{
+  "seed": 0,
+  "draws": [
+    100,
+    2000
+  ],
+  "unit": "template",
+  "pairs": "data/pretrain/oas_homolog_pairs.tsv.gz",
+  "method": "Paired percentile bootstrap over the 20 template blocks of each cell's committed FASTA. Each draw resamples ONE set of template indices and scores BOTH methods on it, so the variance the two share -- which templates the split handed them -- cancels. Blocks are matched to templates by nearest edit distance, because generation_eval walks a seeded permutation of split.templates while the baselines walk it in order; at seed 0 the recovered mapping is exactly random.Random(0).sample(range(20), 20) for both families, which is the independent check on it. Centres are the runs' own emitted values, reproduced from the committed FASTAs to 1e-9. Read paired_diff_ci; the marginal a_ci/b_ci are SPREADS shifted ~0.08 below their centres, because a with-replacement draw leaves 12.8 distinct templates and this estimator moves with the effective sample size.",
+  "template_mapping": {
+    "metrics/disjoint/editor-her2vh.json": {
+      "model": [
+        12,
+        13,
+        1,
+        8,
+        15,
+        6,
+        19,
+        4,
+        7,
+        5,
+        9,
+        3,
+        2,
+        11,
+        17,
+        0,
+        14,
+        16,
+        18,
+        10
+      ],
+      "random_mutations": [
+        12,
+        13,
+        1,
+        8,
+        15,
+        6,
+        19,
+        4,
+        7,
+        5,
+        9,
+        3,
+        2,
+        11,
+        17,
+        0,
+        14,
+        16,
+        18,
+        10
+      ],
+      "random_homolog_pairing": []
+    },
+    "metrics/disjoint/evodiff-msa-her2vh.json": {
+      "evodiff_msa_inpaint": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ]
+    },
+    "metrics/disjoint/evotune-forced-her2vh.json": {
+      "evotuned_plm_forced_substitutions": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ]
+    },
+    "metrics/disjoint/evotune-her2vh.json": {
+      "evotuned_plm": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ]
+    }
+  },
+  "comparisons": [
+    {
+      "family": "data/interim/seed_families/Anti-HER2_scFv_VH_trastuzumab.fasta",
+      "metric": "covariance_agreement",
+      "a": {
+        "cell": "metrics/disjoint/editor-her2vh.json",
+        "set": "model",
+        "value": 0.9344764730964324
+      },
+      "b": {
+        "cell": "metrics/disjoint/evotune-her2vh.json",
+        "set": "evotuned_plm",
+        "value": 0.9292731835524095
+      },
+      "margin": 0.005203289544022938,
+      "seed": 0,
+      "unit": "template",
+      "by_draws": {
+        "100": {
+          "paired_diff_ci": [
+            -0.01676190398758315,
+            0.08109049019437287
+          ],
+          "includes_zero": true,
+          "paired_diff_mean": 0.007650444380444189,
+          "share_of_draws_a_ahead": 0.57,
+          "a_ci": [
+            0.7532942063228484,
+            0.9186040905197134
+          ],
+          "b_ci": [
+            0.6711416395177887,
+            0.9219829453323097
+          ],
+          "a_bootstrap_mean": 0.8559108932554733,
+          "b_bootstrap_mean": 0.8482604488750289,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.10234638946105923,
+              0.1993105014606451
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        },
+        "2000": {
+          "paired_diff_ci": [
+            -0.017208750841497755,
+            0.05786566071240373
+          ],
+          "includes_zero": true,
+          "paired_diff_mean": 0.005943170626983844,
+          "share_of_draws_a_ahead": 0.519,
+          "a_ci": [
+            0.7207997761716116,
+            0.9180017386314514
+          ],
+          "b_ci": [
+            0.690268889212125,
+            0.9238631899015534
+          ],
+          "a_bootstrap_mean": 0.8548026630569143,
+          "b_bootstrap_mean": 0.8488594924299304,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.1337279868441329,
+              0.17330817068952653
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        }
+      }
+    },
+    {
+      "family": "data/interim/seed_families/Anti-HER2_scFv_VH_trastuzumab.fasta",
+      "metric": "mip_agreement",
+      "a": {
+        "cell": "metrics/disjoint/editor-her2vh.json",
+        "set": "model",
+        "value": 0.8659005489593262
+      },
+      "b": {
+        "cell": "metrics/disjoint/evotune-her2vh.json",
+        "set": "evotuned_plm",
+        "value": 0.8348081804523058
+      },
+      "margin": 0.031092368507020463,
+      "seed": 0,
+      "unit": "template",
+      "by_draws": {
+        "100": {
+          "paired_diff_ci": [
+            -0.01894720059650301,
+            0.06056333368916689
+          ],
+          "includes_zero": true,
+          "paired_diff_mean": 0.01825070862468063,
+          "share_of_draws_a_ahead": 0.84,
+          "a_ci": [
+            0.6320466903985378,
+            0.8500890372102462
+          ],
+          "b_ci": [
+            0.5928768769130297,
+            0.8435030366074256
+          ],
+          "a_bootstrap_mean": 0.7760255620127943,
+          "b_bootstrap_mean": 0.7577748533881135,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.10912097301127066,
+              0.1740305092104436
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        },
+        "2000": {
+          "paired_diff_ci": [
+            -0.025088211207523137,
+            0.05814418839966662
+          ],
+          "includes_zero": true,
+          "paired_diff_mean": 0.014580304895907446,
+          "share_of_draws_a_ahead": 0.748,
+          "a_ci": [
+            0.6293083356535407,
+            0.8544853399981958
+          ],
+          "b_ci": [
+            0.6143329117895407,
+            0.8510716206407399
+          ],
+          "a_bootstrap_mean": 0.7721772912253523,
+          "b_bootstrap_mean": 0.7575969863294449,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.1515399806570279,
+              0.17134423796512055
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        }
+      }
+    },
+    {
+      "family": "data/interim/seed_families/Anti-HER2_scFv_VH_trastuzumab.fasta",
+      "metric": "covariance_agreement",
+      "a": {
+        "cell": "metrics/disjoint/evodiff-msa-her2vh.json",
+        "set": "evodiff_msa_inpaint",
+        "value": 0.914838921933321
+      },
+      "b": {
+        "cell": "metrics/disjoint/evotune-her2vh.json",
+        "set": "evotuned_plm",
+        "value": 0.9292731835524095
+      },
+      "margin": -0.014434261619088562,
+      "seed": 0,
+      "unit": "template",
+      "by_draws": {
+        "100": {
+          "paired_diff_ci": [
+            -0.03401725027950475,
+            0.00036889359798164545
+          ],
+          "includes_zero": true,
+          "paired_diff_mean": -0.017110684541273787,
+          "share_of_draws_a_ahead": 0.04,
+          "a_ci": [
+            0.6595642642053201,
+            0.9091259047874037
+          ],
+          "b_ci": [
+            0.6711416395177887,
+            0.9219829453323097
+          ],
+          "a_bootstrap_mean": 0.8311497643337554,
+          "b_bootstrap_mean": 0.8482604488750289,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.03401725027950475,
+              0.00036889359798164545
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        },
+        "2000": {
+          "paired_diff_ci": [
+            -0.036925828781957715,
+            0.0023302062331576057
+          ],
+          "includes_zero": true,
+          "paired_diff_mean": -0.017351754676494007,
+          "share_of_draws_a_ahead": 0.043,
+          "a_ci": [
+            0.6717792917576217,
+            0.9055696394195022
+          ],
+          "b_ci": [
+            0.690268889212125,
+            0.9238631899015534
+          ],
+          "a_bootstrap_mean": 0.8315077377534363,
+          "b_bootstrap_mean": 0.8488594924299304,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.036925828781957715,
+              0.0023302062331576057
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        }
+      }
+    },
+    {
+      "family": "data/interim/seed_families/Anti-HER2_scFv_VH_trastuzumab.fasta",
+      "metric": "mip_agreement",
+      "a": {
+        "cell": "metrics/disjoint/evodiff-msa-her2vh.json",
+        "set": "evodiff_msa_inpaint",
+        "value": 0.8221127646600117
+      },
+      "b": {
+        "cell": "metrics/disjoint/evotune-her2vh.json",
+        "set": "evotuned_plm",
+        "value": 0.8348081804523058
+      },
+      "margin": -0.012695415792294051,
+      "seed": 0,
+      "unit": "template",
+      "by_draws": {
+        "100": {
+          "paired_diff_ci": [
+            -0.061794687011145655,
+            0.002583499897454211
+          ],
+          "includes_zero": true,
+          "paired_diff_mean": -0.026075672889975938,
+          "share_of_draws_a_ahead": 0.04,
+          "a_ci": [
+            0.5483990226393537,
+            0.8352839116908541
+          ],
+          "b_ci": [
+            0.5928768769130297,
+            0.8435030366074256
+          ],
+          "a_bootstrap_mean": 0.7316991804981378,
+          "b_bootstrap_mean": 0.7577748533881135,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.061794687011145655,
+              0.002583499897454211
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        },
+        "2000": {
+          "paired_diff_ci": [
+            -0.06540964106789948,
+            0.004303582237241033
+          ],
+          "includes_zero": true,
+          "paired_diff_mean": -0.026296805932965083,
+          "share_of_draws_a_ahead": 0.051,
+          "a_ci": [
+            0.5675869691322014,
+            0.8365251367730029
+          ],
+          "b_ci": [
+            0.6143329117895407,
+            0.8510716206407399
+          ],
+          "a_bootstrap_mean": 0.7313001803964798,
+          "b_bootstrap_mean": 0.7575969863294449,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.06540964106789948,
+              0.004303582237241033
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        }
+      }
+    },
+    {
+      "family": "data/interim/seed_families/Anti-HER2_scFv_VH_trastuzumab.fasta",
+      "metric": "covariance_agreement",
+      "a": {
+        "cell": "metrics/disjoint/evotune-forced-her2vh.json",
+        "set": "evotuned_plm_forced_substitutions",
+        "value": 0.9093226535592386
+      },
+      "b": {
+        "cell": "metrics/disjoint/evotune-her2vh.json",
+        "set": "evotuned_plm",
+        "value": 0.9292731835524095
+      },
+      "margin": -0.01995052999317093,
+      "seed": 0,
+      "unit": "template",
+      "by_draws": {
+        "100": {
+          "paired_diff_ci": [
+            -0.05224885074609298,
+            -0.007901334456602349
+          ],
+          "includes_zero": false,
+          "paired_diff_mean": -0.029538978460318836,
+          "share_of_draws_a_ahead": 0.0,
+          "a_ci": [
+            0.6239712216187244,
+            0.9077480698413164
+          ],
+          "b_ci": [
+            0.6711416395177887,
+            0.9219829453323097
+          ],
+          "a_bootstrap_mean": 0.8187214704147103,
+          "b_bootstrap_mean": 0.8482604488750289,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.05224885074609298,
+              -0.007901334456602349
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        },
+        "2000": {
+          "paired_diff_ci": [
+            -0.054035500522713775,
+            -0.009603632707161025
+          ],
+          "includes_zero": false,
+          "paired_diff_mean": -0.030058023150818246,
+          "share_of_draws_a_ahead": 0.0005,
+          "a_ci": [
+            0.6515947308845913,
+            0.9021560202189512
+          ],
+          "b_ci": [
+            0.690268889212125,
+            0.9238631899015534
+          ],
+          "a_bootstrap_mean": 0.8188014692791122,
+          "b_bootstrap_mean": 0.8488594924299304,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.054035500522713775,
+              -0.009603632707161025
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        }
+      }
+    },
+    {
+      "family": "data/interim/seed_families/Anti-HER2_scFv_VH_trastuzumab.fasta",
+      "metric": "mip_agreement",
+      "a": {
+        "cell": "metrics/disjoint/evotune-forced-her2vh.json",
+        "set": "evotuned_plm_forced_substitutions",
+        "value": 0.8085628664540631
+      },
+      "b": {
+        "cell": "metrics/disjoint/evotune-her2vh.json",
+        "set": "evotuned_plm",
+        "value": 0.8348081804523058
+      },
+      "margin": -0.026245313998242703,
+      "seed": 0,
+      "unit": "template",
+      "by_draws": {
+        "100": {
+          "paired_diff_ci": [
+            -0.09471912887538714,
+            -0.01499997029788036
+          ],
+          "includes_zero": false,
+          "paired_diff_mean": -0.049230966653718816,
+          "share_of_draws_a_ahead": 0.0,
+          "a_ci": [
+            0.529453880222047,
+            0.8172375983524643
+          ],
+          "b_ci": [
+            0.5928768769130297,
+            0.8435030366074256
+          ],
+          "a_bootstrap_mean": 0.7085438867343947,
+          "b_bootstrap_mean": 0.7577748533881135,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.09471912887538714,
+              -0.01499997029788036
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        },
+        "2000": {
+          "paired_diff_ci": [
+            -0.10000375123091743,
+            -0.01602197366884761
+          ],
+          "includes_zero": false,
+          "paired_diff_mean": -0.05071940310760391,
+          "share_of_draws_a_ahead": 0.0,
+          "a_ci": [
+            0.5430270124975749,
+            0.8209269600977621
+          ],
+          "b_ci": [
+            0.6143329117895407,
+            0.8510716206407399
+          ],
+          "a_bootstrap_mean": 0.7068775832218409,
+          "b_bootstrap_mean": 0.7575969863294449,
+          "if_paired_on_raw_block_index": {
+            "paired_diff_ci": [
+              -0.10000375123091743,
+              -0.01602197366884761
+            ],
+            "note": "WRONG PAIRING, kept as a diagnostic. generation_eval walks a seeded permutation of split.templates and the baselines walk it in order, so block i is not the same template in the two files; differencing on block index cancels nothing and widens the interval by about 3x."
+          }
+        }
+      }
+    }
+  ]
+}

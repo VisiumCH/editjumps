@@ -1,0 +1,27 @@
+{
+  "model": "data/pretrain/eval_C_oas_appA",
+  "n_templates": 25,
+  "n_variants_per_template": 20,
+  "n_generated": 500,
+  "alignment": "Needleman-Wunsch projection onto template coordinates (L=234)",
+  "defined_by_the_paper": {
+    "levenshtein_to_template": 32.596,
+    "pairwise_levenshtein": 46.097052631578954,
+    "covariance_frobenius_generated": 27.360348829406792,
+    "covariance_frobenius_natural": 41.753515082685006,
+    "interaction_strength_mean_generated": 0.07662605441657505,
+    "interaction_strength_mean_natural": 0.12666769444711465,
+    "mip_mean_generated": 1.0940834686385683e-17,
+    "mip_mean_natural": -7.133034919700673e-18,
+    "kl_generated_vs_natural": 0.0013437202721610347,
+    "spectrum_mmd": 3.237749835920002
+  },
+  "our_interpretation": {
+    "entropy_delta": 0.16636746275593528,
+    "js_divergence": 0.0003339919211348614,
+    "profile_log_likelihood": -270.69471361541014
+  },
+  "not_implemented": [
+    "esm2_pseudo_log_likelihood (B.2)"
+  ]
+}

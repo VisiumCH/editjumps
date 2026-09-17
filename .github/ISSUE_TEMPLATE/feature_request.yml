@@ -1,0 +1,42 @@
+name: Feature or change request
+description: Propose a new capability, a new pipeline stage, or a change to an existing one.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What is hard or impossible today? Describe the situation, not the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you propose
+      description: The change you have in mind, and roughly where it would live.
+    validations:
+      required: true
+  - type: dropdown
+    id: provenance
+    attributes:
+      label: Is this a reproduction stage?
+      description: |
+        Every stage here is classified `reproduction` in `editjumps/core/provenance.py`, and a test
+        fails if a new one is added without a classification. A stage that is NOT a reproduction
+        also needs `Claim` widened first, which is a deliberate decision rather than a detail.
+      options:
+        - Yes — implements a decision from EvoFlows / Edit Flows
+        - No — it would need a new claim in provenance.py
+        - Not a pipeline stage
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: How would we know it worked?
+      description: The measurement, test or artifact that would settle it.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

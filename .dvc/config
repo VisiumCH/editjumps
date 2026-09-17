@@ -1,0 +1,10 @@
+[core]
+    remote = gcs
+    # DVC's exit-time analytics daemon aborts on the SkyPilot VMs: gRPC's fork handlers bail
+    # out (ares_resolver.cc "Check failed: channel_ != nullptr"), the forked child dies before
+    # writing its pid, and dvc/daemon.py then evaluates int("") -> ValueError. It happens after
+    # the stage has already succeeded and pushed, but it sets dvc's exit code to 1 and fails the
+    # whole job. Nothing here needs the telemetry. See #184.
+    analytics = false
+['remote "gcs"']
+    url = gs://${DVC_BUCKET}/dvc

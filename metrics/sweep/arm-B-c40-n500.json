@@ -1,0 +1,47 @@
+{
+  "model": "data/pretrain/eval_B_stock_appA",
+  "clock_normalization": 40.0,
+  "baselines": {
+    "random_mutations": {
+      "levenshtein_to_template": 24.736,
+      "kl_generated_vs_natural": 0.0013461550102879761,
+      "spectrum_mmd": 1.1955622108447592,
+      "entropy_delta": 0.1343716457240831
+    },
+    "random_homolog_pairing": {
+      "levenshtein_to_template": 23.8,
+      "kl_generated_vs_natural": 0.0010129546668037242,
+      "spectrum_mmd": 1.5116629915427557,
+      "entropy_delta": 0.0
+    }
+  },
+  "n_templates": 25,
+  "n_variants_per_template": 20,
+  "n_generated": 500,
+  "n_natural_reference": 200,
+  "n_natural_aligned": 25,
+  "reference_construction": "single family, inference/holdout disjoint (paper's \u00a74.2)",
+  "alignment": "Needleman-Wunsch projection onto template coordinates (L=116)",
+  "defined_by_the_paper": {
+    "levenshtein_to_template": 3.512,
+    "pairwise_levenshtein": 6.481263157894737,
+    "covariance_frobenius_generated": 4.898161576591783,
+    "covariance_frobenius_natural": 5.39928386362488,
+    "interaction_strength_mean_generated": 0.01162957020948845,
+    "interaction_strength_mean_natural": 0.012311819816339739,
+    "mip_mean_generated": 1.5519174497479789e-18,
+    "mip_mean_natural": 8.503445338542672e-19,
+    "kl_generated_vs_natural": 0.0007757958338516535,
+    "spectrum_mmd": 0.9951487326023153
+  },
+  "esm2_pseudo_log_likelihood": {},
+  "our_interpretation": {
+    "entropy_delta": 0.05204156548488209,
+    "js_divergence": 0.0001918509590211293,
+    "profile_log_likelihood": -49.36438763751814
+  },
+  "not_implemented": [
+    "esm2_pseudo_log_likelihood (B.2) - pass --pll-model"
+  ],
+  "caveats": []
+}

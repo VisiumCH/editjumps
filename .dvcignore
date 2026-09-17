@@ -1,0 +1,12 @@
+# Add patterns of files dvc should ignore, which could improve
+# the performance. Learn more at
+# https://dvc.org/doc/user-guide/dvcignore
+
+# Several stages declare a whole package directory as a dep, so that a new module cannot silently
+# escape dependency tracking. The cost is that DVC hashes everything inside those directories -
+# including __pycache__, whose .pyc files change on every import. Without this, `dvc status` reports
+# those stages as stale after any test run, with no source change at all.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/

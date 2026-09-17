@@ -1,0 +1,247 @@
+{
+  "starting_length": 120,
+  "rates_per_position": {
+    "insert": 1.0,
+    "delete": 0.5,
+    "substitute": 1.0
+  },
+  "n_trajectories": 2000,
+  "seed": 777,
+  "rate_field": "constant per position and in time; uniform token distributions",
+  "regimes": {
+    "clock_40": {
+      "clock": 40.0,
+      "gillespie": {
+        "length": {
+          "mean": 140.31,
+          "sem": 0.1729260006501348
+        },
+        "edit_distance": {
+          "mean": 71.288,
+          "sem": 0.1455888940236566
+        }
+      },
+      "euler": [
+        {
+          "n_steps": 2,
+          "length": {
+            "mean": 139.9675,
+            "sem": 0.16094618265698607
+          },
+          "edit_distance": {
+            "mean": 75.7295,
+            "sem": 0.14034070197670973
+          },
+          "length_delta": -0.34250000000000114,
+          "length_delta_sem": 0.23623521205084214,
+          "length_resolved": false,
+          "edit_distance_delta": 4.441500000000005,
+          "edit_distance_delta_sem": 0.2022168111071559,
+          "edit_distance_resolved": true
+        },
+        {
+          "n_steps": 5,
+          "length": {
+            "mean": 140.1015,
+            "sem": 0.17220460530439952
+          },
+          "edit_distance": {
+            "mean": 72.769,
+            "sem": 0.14597764978625516
+          },
+          "length_delta": -0.208500000000015,
+          "length_delta_sem": 0.24404472497657975,
+          "length_resolved": false,
+          "edit_distance_delta": 1.4810000000000088,
+          "edit_distance_delta_sem": 0.20616886355643055,
+          "edit_distance_resolved": true
+        },
+        {
+          "n_steps": 10,
+          "length": {
+            "mean": 140.231,
+            "sem": 0.17581033569465854
+          },
+          "edit_distance": {
+            "mean": 72.0525,
+            "sem": 0.1466274929399085
+          },
+          "length_delta": -0.07900000000000773,
+          "length_delta_sem": 0.24660226243471278,
+          "length_resolved": false,
+          "edit_distance_delta": 0.7644999999999982,
+          "edit_distance_delta_sem": 0.2066294938988005,
+          "edit_distance_resolved": true
+        },
+        {
+          "n_steps": 25,
+          "length": {
+            "mean": 140.1545,
+            "sem": 0.1724867841904422
+          },
+          "edit_distance": {
+            "mean": 71.386,
+            "sem": 0.14496899670275193
+          },
+          "length_delta": -0.1554999999999893,
+          "length_delta_sem": 0.24424391992680308,
+          "length_resolved": false,
+          "edit_distance_delta": 0.09799999999999898,
+          "edit_distance_delta_sem": 0.20545592244574995,
+          "edit_distance_resolved": false
+        },
+        {
+          "n_steps": 50,
+          "length": {
+            "mean": 140.478,
+            "sem": 0.17578739603368085
+          },
+          "edit_distance": {
+            "mean": 71.3655,
+            "sem": 0.14691067438455266
+          },
+          "length_delta": 0.16800000000000637,
+          "length_delta_sem": 0.2465859085697165,
+          "length_resolved": false,
+          "edit_distance_delta": 0.07750000000000057,
+          "edit_distance_delta_sem": 0.2068305400833145,
+          "edit_distance_resolved": false
+        },
+        {
+          "n_steps": 100,
+          "length": {
+            "mean": 140.337,
+            "sem": 0.17659928979069334
+          },
+          "edit_distance": {
+            "mean": 71.34,
+            "sem": 0.1469098064991674
+          },
+          "length_delta": 0.026999999999986812,
+          "length_delta_sem": 0.24716535124371236,
+          "length_resolved": false,
+          "edit_distance_delta": 0.05200000000000671,
+          "edit_distance_delta_sem": 0.20682992362966807,
+          "edit_distance_resolved": false
+        }
+      ]
+    },
+    "clock_none": {
+      "clock": null,
+      "gillespie": {
+        "length": {
+          "mean": 198.6815,
+          "sem": 0.4188081052098857
+        },
+        "edit_distance": {
+          "mean": 157.1925,
+          "sem": 0.3497862162429171
+        }
+      },
+      "euler": [
+        {
+          "n_steps": 2,
+          "length": {
+            "mean": 187.8835,
+            "sem": 0.2777814701299815
+          },
+          "edit_distance": {
+            "mean": 153.159,
+            "sem": 0.22606948756212836
+          },
+          "length_delta": -10.798000000000002,
+          "length_delta_sem": 0.5025562397752797,
+          "length_resolved": true,
+          "edit_distance_delta": -4.033500000000004,
+          "edit_distance_delta_sem": 0.41648266504158377,
+          "edit_distance_resolved": true
+        },
+        {
+          "n_steps": 5,
+          "length": {
+            "mean": 194.2315,
+            "sem": 0.3733720091324492
+          },
+          "edit_distance": {
+            "mean": 155.2865,
+            "sem": 0.3076126161844112
+          },
+          "length_delta": -4.449999999999989,
+          "length_delta_sem": 0.5610765421875133,
+          "length_resolved": true,
+          "edit_distance_delta": -1.906000000000006,
+          "edit_distance_delta_sem": 0.46580673965643166,
+          "edit_distance_resolved": true
+        },
+        {
+          "n_steps": 10,
+          "length": {
+            "mean": 195.732,
+            "sem": 0.4113267348974786
+          },
+          "edit_distance": {
+            "mean": 155.656,
+            "sem": 0.34303450020977055
+          },
+          "length_delta": -2.9495000000000005,
+          "length_delta_sem": 0.5870178121921986,
+          "length_resolved": true,
+          "edit_distance_delta": -1.5364999999999895,
+          "edit_distance_delta_sem": 0.48992148902421484,
+          "edit_distance_resolved": true
+        },
+        {
+          "n_steps": 25,
+          "length": {
+            "mean": 197.2735,
+            "sem": 0.41854980688733173
+          },
+          "edit_distance": {
+            "mean": 156.332,
+            "sem": 0.3468242083761713
+          },
+          "length_delta": -1.407999999999987,
+          "length_delta_sem": 0.5921014860941639,
+          "length_resolved": true,
+          "edit_distance_delta": -0.8605000000000018,
+          "edit_distance_delta_sem": 0.49258240791698465,
+          "edit_distance_resolved": false
+        },
+        {
+          "n_steps": 50,
+          "length": {
+            "mean": 198.5145,
+            "sem": 0.43613415525006505
+          },
+          "edit_distance": {
+            "mean": 157.2,
+            "sem": 0.3674357147886568
+          },
+          "length_delta": -0.1670000000000016,
+          "length_delta_sem": 0.604659598753863,
+          "length_resolved": false,
+          "edit_distance_delta": 0.007499999999993179,
+          "edit_distance_delta_sem": 0.507306023595017,
+          "edit_distance_resolved": false
+        },
+        {
+          "n_steps": 100,
+          "length": {
+            "mean": 198.593,
+            "sem": 0.4380926135750687
+          },
+          "edit_distance": {
+            "mean": 157.2305,
+            "sem": 0.362800216198167
+          },
+          "length_delta": -0.08850000000001046,
+          "length_delta_sem": 0.606073730711478,
+          "length_resolved": false,
+          "edit_distance_delta": 0.038000000000010914,
+          "edit_distance_delta_sem": 0.503958722463431,
+          "edit_distance_resolved": false
+        }
+      ]
+    }
+  }
+}
