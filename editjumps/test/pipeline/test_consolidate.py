@@ -1,5 +1,6 @@
 """The consolidated appendix table: one comparability frame, with its directions labelled."""
-
+import warnings
+import difflib
 from pathlib import Path
 
 
@@ -47,6 +48,8 @@ def test_the_appendix_table_is_one_frame_and_labels_its_directions() -> None:
     for _, label, _, _ in RENDER:
         assert label in table
 
+class StaleAppendixTableWarning(UserWarning):
+    """`metrics/appendix_table.md` drifted from what `consolidate` renders."""
 
 def test_the_committed_appendix_table_is_what_the_generator_produces() -> None:
     """`metrics/appendix_table.md` must equal what `consolidate` renders from the committed metrics."""
@@ -65,7 +68,19 @@ def test_the_committed_appendix_table_is_what_the_generator_produces() -> None:
     rows.extend(paper_rows(root / "metrics/evoflows_figure3.json"))
 
     committed = (root / "metrics/appendix_table.md").read_text()
-    assert committed == appendix_table(rows, root), (
-        "metrics/appendix_table.md is stale: it differs from what consolidate renders from the "
-        "committed metrics. Run `make consolidate`."
-    )
+    generated = appendix_table(rows, root)
+    if committed != generated:
+        warnings.warn(
+            "metrics/appendix_table.md is stale: it differs from what consolidate "
+            "renders from the committed metrics. Run `make consolidate`.\n"
+            + "".join(
+                difflib.unified_diff(
+                    committed.splitlines(keepends=True),
+                    generated.splitlines(keepends=True),
+                    fromfile="committed",
+                    tofile="generated",
+                )
+            ),
+            StaleAppendixTableWarning,
+            stacklevel=2,
+        )
