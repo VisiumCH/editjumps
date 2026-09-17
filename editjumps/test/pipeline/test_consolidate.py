@@ -1,6 +1,6 @@
 """The consolidated appendix table: one comparability frame, with its directions labelled."""
-import warnings
 import difflib
+import warnings
 from pathlib import Path
 
 
