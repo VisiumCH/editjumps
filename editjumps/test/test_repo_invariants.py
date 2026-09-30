@@ -137,9 +137,15 @@ def test_readme_hero_svgs_are_generated_and_differ_only_in_palette() -> None:
         root / ".gitignore").read_text()
     # Feller is quoted, so he must be cited.
     assert "Berkeley Symposium" in readme and "Feller, W. (1949)" in readme
-    # Static badges only: this repo is private, so anything shields.io has to READ renders broken.
+    # The repo is public now, so badges that READ it resolve for anonymous visitors and the
+    # static-only rule is retired. Both forms are in use: static shields.io/badge/ for facts about
+    # the project, live endpoints for repo state.
     assert "shields.io/badge/" in readme
-    assert "actions/workflows/ci.yml/badge.svg" not in readme.split("<!--")[0]
+    # A live badge must read THIS repo, or it silently renders some other project's state.
+    live = re.findall(r"src=\"(https://[^\"]*(?:badge\.svg|dynamic/toml)[^\"]*)\"", readme)
+    assert live, "no live badge found; if they were all removed, drop this check too"
+    for url in live:
+        assert "VisiumCH/editjumps" in url or "VisiumCH%2Feditjumps" in url, url
 
 
 def test_every_measuring_stage_is_tracked_or_exempt() -> None:

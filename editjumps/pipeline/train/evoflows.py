@@ -7,6 +7,7 @@ import copy
 import gzip
 import math
 import random
+from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
@@ -21,7 +22,25 @@ from editjumps.core.sequences import PAIR_SEP
 from editjumps.pipeline.preprocess.pretrain.seed_homologs import CHAIN_CHOICES
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Iterator, Sequence
+
+
+@contextmanager
+def _hf_load_report_silenced() -> Iterator[None]:
+    """Suppress transformers' state-dict LOAD REPORT inside the block.
+
+    The report is emitted through the transformers logger at WARNING level, so lifting the
+    threshold to ERROR hides it. Genuine failures are unaffected: a size mismatch raises a
+    RuntimeError before the report is ever built.
+    """
+    from transformers.utils import logging as hf_logging
+
+    previous = hf_logging.get_verbosity()
+    hf_logging.set_verbosity_error()
+    try:
+        yield
+    finally:
+        hf_logging.set_verbosity(previous)
 
 
 def pick_device() -> str:
@@ -219,8 +238,15 @@ class EvoFlowsModel(nn.Module):
                 "`load_trained` needs `encoder/` and `evoflows_model.pt` side by side. "
                 "See `editjumps restore-editor` to convert a training checkpoint."
             )
-        model = cls.from_esm(str(folder / "encoder"), time_dim=time_dim,
-                             rate_head=rate_head, q_head=q_head)
+        # Silenced deliberately, and only here. An exported `encoder/` carries no masked-LM head, so
+        # the EsmForMaskedLM load inside `from_esm` reports five `lm_head.*` tensors as newly
+        # initialised. None of them survive this method: the strict `load_state_dict` below replaces
+        # every parameter with a trained one (eq 16's Q heads arrive as `insert_q_head` and
+        # `substitute_q_head`), and a key that really was missing raises there rather than warning.
+        # Training keeps its reports -- it loads a trunk whose `lm_head` is the point of `esm_lm_head`.
+        with _hf_load_report_silenced():
+            model = cls.from_esm(str(folder / "encoder"), time_dim=time_dim,
+                                 rate_head=rate_head, q_head=q_head)
         state = torch.load(Path(output_folder) / "evoflows_model.pt", map_location="cpu")
 
         if "insert_lambda_head.0.weight" in state and model.rate_head != "mlp":
