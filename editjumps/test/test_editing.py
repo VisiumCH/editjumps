@@ -70,9 +70,9 @@ def _stub_the_gpu_half_of_edit(monkeypatch: "pytest.MonkeyPatch", edits_per_call
     monkeypatch.setitem(sys.modules, "editjumps.pipeline.train.evoflows", fake_evoflows)
 
 
-def _fake_model_folder(tmp_path: Path) -> Path:
+def _fake_model_folder(tmp_path: Path, name: str = "editor") -> Path:
     """Create a folder that passes `resolve_model_folder`'s artifact check."""
-    folder = tmp_path / "editor"
+    folder = tmp_path / name
     (folder / "encoder").mkdir(parents=True)
     (folder / "evoflows_model.pt").write_bytes(b"")
     return folder
@@ -115,6 +115,12 @@ def test_edit_without_a_checkpoint_says_exactly_what_to_do_and_does_not_tracebac
         edit(TRASTUZUMAB_VH, n=2)
     message = str(raised.value)
 
+    # The public weights come first: they are the only route that works outside the org, and the
+    # message used to claim no public mirror existed at all.
+    assert "VisiumSA/EditJumps" in message, "the message must name the public checkpoint"
+    assert message.index("VisiumSA/EditJumps") < message.index(CHECKPOINT_BUCKET), (
+        "the credential-free route must be offered before the private bucket"
+    )
     assert "restore-editor" in message, "the message must name the command that fixes this"
     assert "faithful-appendixa" in message, "and which run tag to restore"
     assert CHECKPOINT_BUCKET in message, "and the bucket, whatever DVC_BUCKET is set to"
@@ -331,3 +337,45 @@ def test_a_half_written_model_folder_is_refused_before_torch_sees_it(tmp_path: P
 
     with pytest.raises(CheckpointNotFoundError, match="restore-editor"):
         resolve_model_folder(tmp_path / "nothing-here")
+
+
+def test_silencing_the_hf_load_report_is_scoped_to_the_block() -> None:
+    """`load_trained` hides one load report; it must not leave transformers muted afterwards."""
+    pytest.importorskip("transformers")
+    from transformers.utils import logging as hf_logging  # ty: ignore[unresolved-import]
+
+    from editjumps.pipeline.train.evoflows import _hf_load_report_silenced
+
+    before = hf_logging.get_verbosity()
+    with _hf_load_report_silenced():
+        # The report is logged at WARNING, so ERROR is the threshold that drops it.
+        assert hf_logging.get_verbosity() == hf_logging.ERROR
+    assert hf_logging.get_verbosity() == before
+
+    # A failed load must restore it too, or one bad checkpoint mutes every later warning.
+    with pytest.raises(RuntimeError), _hf_load_report_silenced():
+        raise RuntimeError("load blew up")
+    assert hf_logging.get_verbosity() == before
+
+
+def test_the_documented_download_location_is_found_without_a_model_flag(
+    monkeypatch: "pytest.MonkeyPatch", tmp_path: Path
+) -> None:
+    """`hf download --local-dir ./weights` lands where `edit` looks, so the README needs no --model."""
+    from editjumps.editing import (
+        DEFAULT_MODEL_FOLDERS,
+        CheckpointNotFoundError,
+        resolve_model_folder,
+    )
+
+    monkeypatch.chdir(tmp_path)
+    assert Path("weights/model") in DEFAULT_MODEL_FOLDERS, "the download target must be searched"
+
+    downloaded = _fake_model_folder(tmp_path / "weights", name="model")
+    assert resolve_model_folder() == Path("weights/model")
+
+    # An explicit --model still wins, and a typo in it is reported rather than quietly
+    # resolving to the download that happens to be sitting there.
+    assert resolve_model_folder(downloaded) == downloaded
+    with pytest.raises(CheckpointNotFoundError, match="typo-here"):
+        resolve_model_folder(tmp_path / "typo-here")

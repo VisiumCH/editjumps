@@ -1,24 +1,76 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
-title: "editjumps: an independent reproduction of EvoFlows edit-flow sequence editing"
+message: "If you use this software, please cite the paper below (preferred-citation)."
+title: "EditJumps: an independent replication of EvoFlows edit-flow sequence editing"
 abstract: >-
-  An independent reproduction of EvoFlows (arXiv 2603.11703), an edit-flow generative model over
+  An independent replication of EvoFlows (arXiv 2603.11703), an edit-flow generative model over
   protein sequences that proposes insertions, deletions and substitutions on a template, built on
   Edit Flows (arXiv 2506.09018) over an ESM-2 trunk. Includes the corpus build, the trunk
   adaptation, the Section 4.2 baselines, and the evaluation harness the reported numbers come from.
 type: software
 authors:
-  - name: "Anonymous Author(s)"
+  - family-names: "Bénédict"
+    given-names: "Gabriel"
+    affiliation: "Visium"
+  - family-names: "Buechler"
+    given-names: "Melanie"
+    affiliation: "Visium"
+  - family-names: "Riera-Solà"
+    given-names: "Gerard"
+    affiliation: "Visium"
+  - family-names: "de Ancos"
+    given-names: "Chloé"
+    affiliation: "Visium"
+  - family-names: "Nana Teukam"
+    given-names: "Yves Gaetan"
+    affiliation: "Visium"
+  - family-names: "Freidank"
+    given-names: "Moritz"
+    affiliation: "Visium"
 version: 0.0.1
-repository-code: "https://anonymous.4open.science/r/editjumps-BA56"
+repository-code: "https://github.com/VisiumCH/editjumps"
+url: "https://github.com/VisiumCH/editjumps"
 keywords:
   - antibody
   - protein engineering
   - sequence editing
   - flow matching
   - ESM-2
-  - reproducible research
+  - replication
 license: MIT
+preferred-citation:
+  type: conference-paper
+  title: "When Edit Flows are Edit Jumps: replicating Edit Flows and EvoFlows"
+  authors:
+    - family-names: "Bénédict"
+      given-names: "Gabriel"
+      affiliation: "Visium"
+    - family-names: "Buechler"
+      given-names: "Melanie"
+      affiliation: "Visium"
+    - family-names: "Riera-Solà"
+      given-names: "Gerard"
+      affiliation: "Visium"
+    - family-names: "de Ancos"
+      given-names: "Chloé"
+      affiliation: "Visium"
+    - family-names: "Nana Teukam"
+      given-names: "Yves Gaetan"
+      affiliation: "Visium"
+    - family-names: "Freidank"
+      given-names: "Moritz"
+      affiliation: "Visium"
+  year: 2026
+  month: 9
+  collection-title: "NeurIPS 2026 Workshop AIDaR"
+  conference:
+    name: "NeurIPS 2026 Workshop AIDaR"
+  url: "https://arxiv.org/abs/2609.18745"
+  license: CC-BY-4.0
+  identifiers:
+    - type: other
+      value: "arXiv:2609.18745"
+      description: "arXiv identifier (cs.LG)"
+  notes: "Accepted at the NeurIPS 2026 Workshop AIDaR. arXiv:2609.18745 [cs.LG]."
 references:
   # Surnames only: these are the author lists as recorded in docs/evoflow_reproduction.md.
   - type: article
@@ -30,7 +82,7 @@ references:
       - family-names: Aziznejad
       - family-names: Bixby
     year: 2026
-    notes: "arXiv:2603.11703 - the paper this repository reproduces."
+    notes: "arXiv:2603.11703 - the paper this repository replicates."
   - type: article
     title: "Edit Flows: Flow Matching with Edit Operations"
     authors:

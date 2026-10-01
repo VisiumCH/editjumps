@@ -26,6 +26,7 @@ def test_scoring_without_torch_explains_the_missing_group_rather_than_tracebacki
         pseudo_likelihood.pseudo_log_likelihood(["ACDEF"], "facebook/esm2_t12_35M_UR50D")
 
     message = str(caught.value)
-    assert "--group train" in message, "the message must name the fix"
+    # `inference`, not `train`: scoring loads a model, it does not train one.
+    assert "--group inference" in message, "the message must name the fix"
     assert "uv sync" in message
     assert "2.5 GB" in message or "--model" in message, "warn about the download it triggers"

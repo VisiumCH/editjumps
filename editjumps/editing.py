@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import random
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import mean
@@ -19,6 +20,11 @@ from editjumps.core.utils import decode_one, encode_one, load_tokenizer
 #: Default path searched for restored editor weights.
 DEFAULT_MODEL_FOLDER = Path("data/pretrain/edit_flows_restored")
 
+#: Every folder searched when no --model is given, in order. The second is where the documented
+#: Hugging Face download lands (`hf download ... --local-dir ./weights`), so following the README
+#: leaves nothing to pass. Both are checked for their artifacts, not merely for existing.
+DEFAULT_MODEL_FOLDERS: tuple[Path, ...] = (DEFAULT_MODEL_FOLDER, Path("weights/model"))
+
 #: Required artifacts in a model folder.
 REQUIRED_ARTIFACTS: tuple[str, str] = ("encoder", "evoflows_model.pt")
 
@@ -27,6 +33,10 @@ DEFAULT_RUN_TAG = "faithful-appendixa"
 
 #: Private bucket for model checkpoints.
 CHECKPOINT_BUCKET = os.environ.get("DVC_BUCKET", "gs://<DVC_BUCKET>")
+
+#: Public Hugging Face mirror of the reported checkpoint. Needs no credentials, unlike
+#: CHECKPOINT_BUCKET -- verified by downloading it with no token in the environment.
+HF_WEIGHTS_REPO = "VisiumSA/EditJumps"
 
 #: Head parameterisations matching DEFAULT_RUN_TAG.
 DEFAULT_RATE_HEAD = "mlp"
@@ -123,15 +133,26 @@ def clock_for_edits(edits: int, lambda_bar: float = DEFAULT_LAMBDA_BAR) -> float
     return edits / lambda_bar
 
 
-def missing_checkpoint_message(searched: Path) -> str:
+def missing_checkpoint_message(searched: Path | Sequence[Path]) -> str:
     """Build the no-weights error: what is missing, and the exact command that fixes it."""
+    paths = (searched,) if isinstance(searched, Path) else tuple(searched)
+    where = " or ".join(str(p) for p in paths)
     return (
-        f"No editor checkpoint at {searched}.\n"
+        f"No editor checkpoint at {where}.\n"
         f"\n"
         f"`edit` needs trained weights and will not emit random sequences instead, so there is "
         f"nothing sensible for it to do until you point it at some.\n"
         f"\n"
-        f"If you have access to the project's GCP bucket, restore the reported arm and retry:\n"
+        f"The reported checkpoint is published on Hugging Face and needs no credentials:\n"
+        f"\n"
+        f"    uvx --from \"huggingface_hub[cli]\" hf download {HF_WEIGHTS_REPO} --local-dir ./weights\n"
+        f"    editjumps edit --sequence <SEQUENCE>\n"
+        f"\n"
+        f"That lands in {DEFAULT_MODEL_FOLDERS[1]}, which is searched above, and its heads are this "
+        f"command's defaults -- so there is nothing to pass.\n"
+        f"\n"
+        f"If you have access to the project's GCP bucket, you can instead restore the arm "
+        f"the paper reports:\n"
         f"\n"
         f"    make restore-editor \\\n"
         f"      CKPT={CHECKPOINT_BUCKET}/checkpoints/experiments/{DEFAULT_RUN_TAG}/checkpoint.pt \\\n"
@@ -140,17 +161,16 @@ def missing_checkpoint_message(searched: Path) -> str:
         f"\n"
         f"or equivalently:\n"
         f"\n"
-        f"    uv run --group train editjumps restore-editor \\\n"
+        f"    uv run --group inference editjumps restore-editor \\\n"
         f"      --checkpoint {CHECKPOINT_BUCKET}/checkpoints/experiments/{DEFAULT_RUN_TAG}/checkpoint.pt \\\n"
         f"      --output-folder {DEFAULT_MODEL_FOLDER} \\\n"
         f"      --model-name facebook/esm2_t12_35M_UR50D \\\n"
         f"      --rate-head {DEFAULT_RATE_HEAD} --q-head {DEFAULT_Q_HEAD}\n"
         f"\n"
-        f"That bucket is PRIVATE to the $PROJECT_ID project. There is no public mirror "
-        f"and no download will be attempted on your behalf: outside the org the restore above "
-        f"fails with AccessDenied. Your options are then to train your own editor "
-        f"(`editjumps train-edit-flows`) or to obtain a checkpoint from the authors, and pass "
-        f"either with --model / model=.\n"
+        f"That bucket is PRIVATE to the $PROJECT_ID project, so outside the org the restore above "
+        f"fails with AccessDenied -- use the Hugging Face download instead. No download is "
+        f"attempted on your behalf either way. You can also train your own editor "
+        f"(`editjumps train-edit-flows`) and pass it with --model / model=.\n"
         f"\n"
         f"A model folder is one holding {REQUIRED_ARTIFACTS[0]}/ and {REQUIRED_ARTIFACTS[1]}. "
         f"Whatever you pass, its --rate-head/--q-head must match how it was trained "
@@ -160,12 +180,15 @@ def missing_checkpoint_message(searched: Path) -> str:
 
 def resolve_model_folder(model: str | Path | None = None) -> Path:
     """Find a usable model folder, or raise the message that says how to get one."""
-    folder = Path(model) if model is not None else DEFAULT_MODEL_FOLDER
-    # Check the artifacts, not just the directory: a half-written restore leaves the folder
-    # there, and `load_trained` would fail deep inside torch with a much worse message.
-    if all((folder / name).exists() for name in REQUIRED_ARTIFACTS):
-        return folder
-    raise CheckpointNotFoundError(missing_checkpoint_message(folder))
+    # An explicit --model is never second-guessed: one candidate, so a typo'd path reports itself
+    # rather than silently resolving to whatever happens to be downloaded.
+    candidates = (Path(model),) if model is not None else DEFAULT_MODEL_FOLDERS
+    for folder in candidates:
+        # Check the artifacts, not just the directory: a half-written restore leaves the folder
+        # there, and `load_trained` would fail deep inside torch with a much worse message.
+        if all((folder / name).exists() for name in REQUIRED_ARTIFACTS):
+            return folder
+    raise CheckpointNotFoundError(missing_checkpoint_message(candidates))
 
 
 def read_sequence(source: str | Path) -> tuple[str, str | None]:
@@ -330,7 +353,9 @@ def main(
     clock: Annotated[
         float, typer.Option(help="Clock normalisation, straight to the sampler; overrides --edits. 0 = unset")
     ] = 0.0,
-    model: Annotated[str, typer.Option(help=f"Model folder; default {DEFAULT_MODEL_FOLDER}")] = "",
+    model: Annotated[str, typer.Option(
+        help=f"Model folder; searched by default: {', '.join(str(p) for p in DEFAULT_MODEL_FOLDERS)}"
+    )] = "",
     rate_head: Annotated[str, typer.Option(help="linear | mlp; must match the checkpoint")] = DEFAULT_RATE_HEAD,
     q_head: Annotated[str, typer.Option(help="fresh | esm_lm_head; must match the checkpoint")] = DEFAULT_Q_HEAD,
     sampler: Annotated[str, typer.Option(

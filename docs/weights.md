@@ -13,7 +13,52 @@ Specification of model weight storage, conversion workflows, and third-party dep
 
 ## Artifact availability
 
-Trained model checkpoints are stored in cloud object storage (`gs://$DVC_BUCKET/`) requiring Google Cloud authentication:
+A trained editor checkpoint is published publicly on Hugging Face at
+[`VisiumSA/EditJumps`](https://huggingface.co/VisiumSA/EditJumps) (MIT, fp32, `mlp` rate heads +
+`esm_lm_head` token head over a stock `facebook/esm2_t12_35M_UR50D` trunk). It needs no credentials
+of any kind — neither a Hugging Face token nor the Google Cloud access the bucket artefacts below
+require:
+
+```bash
+uvx --from "huggingface_hub[cli]" hf download VisiumSA/EditJumps --local-dir ./weights
+```
+
+Via `uvx`, not `uv run --group inference hf download`: the pinned `huggingface_hub` (1.16.1, held
+there by `transformers`) completes the download and then exits 1 with a `click.exceptions.Exit`
+traceback, because that class subclasses `RuntimeError` and the CLI's own `except Exception` catches
+its clean `Exit(0)` and re-raises. The transfer is fine; the exit status is not, which matters in a
+script. `uvx` resolves the tool separately from the project and gets 2.0.0, whose CLI was rewritten
+off typer and exits cleanly. The equivalent from Python, if you would rather not shell out:
+
+```python
+from huggingface_hub import snapshot_download
+
+snapshot_download("VisiumSA/EditJumps", allow_patterns="model/*", local_dir="weights")
+```
+
+The `model/` subfolder unpacks into the loadable layout described below (`encoder/` +
+`evoflows_model.pt`). `weights/model` is one of the folders `edit` searches when no `--model` is
+given (see `DEFAULT_MODEL_FOLDERS`), so a download to `./weights` needs nothing passed; anywhere
+else, hand the path to `--model` or `EvoFlowsModel.load_trained`:
+
+```python
+from pathlib import Path
+
+from editjumps.pipeline.train.evoflows import EvoFlowsModel
+
+model = EvoFlowsModel.load_trained(Path("weights/model"), rate_head="mlp", q_head="esm_lm_head")
+```
+
+An exported `encoder/` holds no masked-LM head, so the `EsmForMaskedLM` load inside `load_trained`
+would report five `lm_head.*` tensors as newly initialized. `load_trained` suppresses that one report
+because nothing it names survives the call: the trained token heads are restored immediately
+afterwards from `evoflows_model.pt` (`insert_q_head` and `substitute_q_head`, six tensors each), and
+the `load_state_dict` is strict, so a parameter that really had stayed randomly initialized raises
+instead of warning. Training is unaffected and keeps its load reports — there the trunk's `lm_head`
+is exactly what `q_head=esm_lm_head` consumes.
+
+The remaining artifacts below are internal to the reproduction runs and stay in cloud object storage
+(`gs://$DVC_BUCKET/`) requiring Google Cloud authentication:
 
 | Artifact | Location | Description |
 |---|---|---|
@@ -50,7 +95,7 @@ make restore-editor CKPT=gs://$DVC_BUCKET/checkpoints/experiments/<RUN_TAG>/chec
 Explicit CLI options:
 
 ```bash
-uv run --group train editjumps restore-editor \
+uv run --group inference editjumps restore-editor \
   --checkpoint gs://$DVC_BUCKET/checkpoints/experiments/<RUN_TAG>/checkpoint.pt \
   --output-folder data/pretrain/edit_flows_restored \
   --model-name data/pretrain/esm2_oas \

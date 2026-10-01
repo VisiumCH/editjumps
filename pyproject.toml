@@ -3,9 +3,16 @@ name = "editjumps"             # Name of the project
 version = "0.0.1"                       # Version
 # Requires Python >= 3.10 for PEP 604 unions and strict zip.
 requires-python = ">=3.10"
-description = "Fine-grained protein sequence editing with learned generative jump edits: an EvoFlows reproduction."
+description = "Fine-grained protein sequence editing with learned generative jump edits: an EvoFlows replication."
 readme = "README.md"
-authors = [{ name = "Anonymous" }]
+authors = [
+    { name = "Gabriel Bénédict" },
+    { name = "Melanie Buechler" },
+    { name = "Gerard Riera-Solà" },
+    { name = "Chloé de Ancos" },
+    { name = "Yves Gaetan Nana Teukam" },
+    { name = "Moritz Freidank" },
+]
 license = "MIT"
 license-files = ["LICENSE"]
 keywords = [
@@ -15,7 +22,7 @@ keywords = [
     "flow-matching",
     "esm-2",
     "bioinformatics",
-    "reproducible-research",
+    "replication",
 ]
 # Not published to PyPI.
 classifiers = [
@@ -47,9 +54,10 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://anonymous.4open.science/r/editjumps"
-Issues = "https://anonymous.4open.science/r/editjumps/issues"
-Documentation = "https://anonymous.4open.science/r/editjumps/tree/main/docs"
+Repository = "https://github.com/VisiumCH/editjumps"
+Issues = "https://github.com/VisiumCH/editjumps/issues"
+Documentation = "https://github.com/VisiumCH/editjumps/tree/main/docs"
+Weights = "https://huggingface.co/VisiumSA/EditJumps"
 
 # Console entry point: `editjumps <command>` drives the whole pipeline; see editjumps/main.py.
 [project.scripts]
@@ -92,12 +100,19 @@ dev = [
 notebook = [
     "jupyterlab",
 ]
+# Everything needed to LOAD a trained editor and generate from it: `edit`, `rank`, evaluation.
+# Split out of `train` because inference needs no trainer, and asking someone who only wants to
+# generate variants to install a group called `train` reads as a mistake. It stays a group rather
+# than a runtime dependency so the light CI job and a plain `uv sync` keep working without torch.
+inference = [
+    "torch>=2.12.1",
+    "transformers>=5.12.1",
+]
 train = [
+    { include-group = "inference" },
     "accelerate>=1.14.0",
     "datasets>=5.0.0",
     "fair-esm>=2.0.0",
-    "torch>=2.12.1",
-    "transformers>=5.12.1",
 ]
 [tool.uv]
 package = true

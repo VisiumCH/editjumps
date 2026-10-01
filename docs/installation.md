@@ -41,12 +41,13 @@ make help                  # list available targets
 
 ## Dependency groups
 
-`pyproject.toml` defines four dependency groups. A default `uv sync` installs the `dev` group:
+`pyproject.toml` defines five dependency groups. A default `uv sync` installs the `dev` group:
 
 | Group | Dependencies | Used for |
 |---|---|---|
 | `dev` | ruff, ty, pytest, pre-commit, `dvc[gs]` | Linting, tests, and DVC pipeline management |
-| `train` | torch, transformers, datasets, accelerate, fair-esm | Training, sequence editing, and generation scoring |
+| `inference` | torch, transformers | Loading a trained editor: `edit`, `rank`, `restore-editor` |
+| `train` | `inference` + datasets, accelerate, fair-esm | Training and generation scoring |
 | `analysis` | fair-esm, umap-learn | Optional exploration and plotting |
 | `notebook` | jupyterlab | Interactive notebooks |
 
