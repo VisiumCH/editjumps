@@ -38,7 +38,7 @@ edits unseen leads zero-shot without the per-family retraining the original appr
 
 **Give one antibody or protein sequence in. Get near neighbours of it back** — a handful of
 insertions, deletions and substitutions, placed where related natural sequences actually differ.
-You set roughly how many edits you want.
+You set roughly how many edits you want. 
 
 ## Quick Edit
 
